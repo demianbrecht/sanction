@@ -62,8 +62,9 @@ class AuthorizationRequest(BaseFlow):
         if "code" in data:
             if expected_state is not None:
                 if expected_state != data["state"]:
-                    raise InvalidStateError
+                    raise InvalidStateError(data)
 
+            
 
         elif "error" in data:
             pass

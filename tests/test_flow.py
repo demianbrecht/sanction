@@ -33,7 +33,6 @@ class TestAuthorizationRequest(TestCase):
         from sanction.flow import AuthorizationRequest
         from sanction.adapters.google import Google
 
-        c = get_config()
         a = Google(get_config())
         uri = a.flow.authorization_uri()
         d = urlparse(uri)
@@ -41,6 +40,7 @@ class TestAuthorizationRequest(TestCase):
         self.assertEquals(d.netloc, "accounts.google.com")
         qs = dict(parse_qsl(d.query))
 
+        c = get_config()
         self.assertEquals(qs["redirect_uri"], c["google.redirect_uri"])
         self.assertEquals(qs["scope"], c["google.scope"])
         self.assertEquals(qs["access_type"], c["google.access_type"])
@@ -51,4 +51,41 @@ class TestAuthorizationRequest(TestCase):
     def test_authorization_received(self):
         from sanction.flow import AuthorizationRequest
         from sanction.adapters.google import Google
+        from sanction.exceptions import InvalidStateError
+
+        a = Google(get_config())
+        a.flow.authorization_received({
+            "code": "test_code"
+        })
+
+        a.flow.authorization_received({
+            "code":"test_code",
+            "state":"test_state"
+        }, expected_state="test_state")
+
+        try:
+            a.flow.authorization_received({
+                "code": "test_code",
+                "state": "test_state"
+            }, expected_state="foo")
+            self.fail()
+        except InvalidStateError:
+            pass
+
+        try:
+            a.flow.authorization_received({
+                "error":"test"
+            })
+            self.fail()
+        except:
+            pass
+
+
+        try:
+            a.flow.authorization_received({
+                "foo":"bar"
+            })
+            self.fail()
+        except:
+            pass
 
