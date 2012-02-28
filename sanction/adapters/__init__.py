@@ -1,8 +1,6 @@
 from abc import ABCMeta
 from abc import abstractproperty
 
-from sanction.flow import AuthorizationRequest
-from sanction.flow import BaseFlow
 from sanction.config import adapter_config
 
 
@@ -46,8 +44,14 @@ class AuthorizationEndpointMixIn(object):
 
 class BaseAdapter(object):
 
-    def __init__(self, config, flow=AuthorizationRequest):
+    def __init__(self, config, flow=None):
+        if flow is None:
+            from sanction.flow import AuthorizationRequest
+            flow = AuthorizationRequest
+
+        from sanction.flow import BaseFlow
         assert(issubclass(flow, BaseFlow))
+
         self.__name = self.__class__.__name__.lower()
         self.__config = adapter_config(self.__name, config)
         self.__flow = flow(self.__config, self)

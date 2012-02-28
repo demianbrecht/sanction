@@ -1,5 +1,8 @@
 from urllib import urlencode
 
+from sanction.adapters import BaseAdapter
+from sanction.adapters import AuthorizationEndpointMixIn
+from sanction.adapters import ResourceEndpointMixIn
 from sanction.exceptions import InvalidStateError
 from sanction.util import safe_get
 
@@ -7,7 +10,6 @@ from sanction.util import safe_get
 class BaseFlow(object):
 
     def __init__(self, grant_type, adapter):
-        from sanction.adapters import BaseAdapter
         assert(isinstance(adapter, BaseAdapter))
 
         self.__grant_type = grant_type
@@ -41,7 +43,6 @@ class AuthorizationRequest(BaseFlow):
 
 
     def authorization_uri(self, state=None):
-        from sanction.adapters import AuthorizationEndpointMixIn
         assert(isinstance(self.adapter, AuthorizationEndpointMixIn)) 
 
         data = {
@@ -56,7 +57,6 @@ class AuthorizationRequest(BaseFlow):
 
 
     def authorization_received(self, data, expected_state=None):
-        from sanction.adapters import ResourceEndpointMixIn
         assert(isinstance(self.adapter, ResourceEndpointMixIn))
 
         if "code" in data:
