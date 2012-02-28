@@ -1,0 +1,6 @@
+/docs/build
+.coverage
+.env
+*.egg-info
+*.pyc
+*.swp
