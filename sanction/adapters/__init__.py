@@ -10,7 +10,7 @@ class BaseAdapter(object):
 
         self.__name = self.__class__.__name__.lower()
         self.__config = adapter_config(self.__name, config)
-        self.__flow = flow(self.__config, self)
+        self.__flow = flow(self.__config)
 
 
     @property

@@ -11,7 +11,6 @@ class TestBaseFlow(TestCase):
         f = BaseFlow("grant_type", adapter)
 
         self.assertEquals(f.grant_type, "grant_type")
-        self.assertEquals(f.adapter, adapter)
 
     def test_optional_attr(self):
         from sanction.adapters import BaseAdapter

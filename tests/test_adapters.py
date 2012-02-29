@@ -10,8 +10,9 @@ class TestBaseAdapter(TestCase):
         a = BaseAdapter(get_config())
 
         self.assertEquals(a.name, "baseadapter")
- 
         self.assertTrue(isinstance(a.flow, AuthorizationRequestFlow))
+        
+        self.assertEquals(a.config["client_id"], "base_id")
 
 
 class TestAuthorizationEndpointMixIn(TestCase):

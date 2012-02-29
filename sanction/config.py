@@ -1,4 +1,3 @@
-from sanction.util import safe_get
 
 def adapter_config(name, dict_):
     o = {}
