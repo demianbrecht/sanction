@@ -25,12 +25,12 @@ class TestBaseFlow(TestCase):
         self.assertEquals(self.__test_attr, d["test_attr"])
 
 
-class TestAuthorizationRequest(TestCase):
+class TestAuthorizationRequestFlow(TestCase):
 
     def test_authorization_uri(self):
         from urlparse import urlparse
         from urlparse import parse_qsl
-        from sanction.flow import AuthorizationRequest
+        from sanction.flow import AuthorizationRequestFlow
         from sanction.adapters.google import Google
 
         a = Google(get_config())
@@ -49,7 +49,7 @@ class TestAuthorizationRequest(TestCase):
 
 
     def test_authorization_received(self):
-        from sanction.flow import AuthorizationRequest
+        from sanction.flow import AuthorizationRequestFlow
         from sanction.adapters.google import Google
         from sanction.exceptions import InvalidStateError
 
