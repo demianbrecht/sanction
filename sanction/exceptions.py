@@ -1,13 +1,20 @@
+from abc import ABCMeta
+from abc import abstractproperty
+
 from sanction.util import safe_get
 
 exception_map = {}
 
 class BaseError(BaseException):
+    __metaclass__ = ABCMeta
+
     def __init__(self, response):
         self.__description = safe_get("description", response)
         self.__error_uri = safe_get("error_uri", response)
         self.__state = safe_get("state", response)
 
+    @abstractproperty
+    def error_name(self): pass #pragma: no cover
 
     @property
     def description(self):
@@ -30,58 +37,44 @@ class BaseError(BaseException):
 
 
 class AccessDeniedError(BaseError):
-    pass
+    error_name = "access_denied"
 
 class InvalidClientError(BaseError):
-    pass
+    error_name = "invalid_client"
 
 class InvalidGrantError(BaseError):
-    pass
-
-class InvalidScopeError(BaseError):
-    pass
-
-class InvalidRequestError(BaseError):
-    pass
-
-class InvalidScopeError(BaseError):
-    pass
-
-class InvalidStateError(BaseError):
-    pass
-
-
-class ServerError(BaseError):
-    pass
-
-class TemporarilyUnavailableError(BaseError):
-    pass
-
-
-class UnauthorizedClientError(BaseError):
-    pass
-
-class UnsupportedGrantType(BaseError):
-    pass
-
-
-class UnsupportedResponseTypeError(BaseError):
-    pass
-
-
-exception_map["access_denied"] = AccessDeniedError
-exception_map["invalid_client"] = InvalidClientError
-exception_map["invalid_grant"] = InvalidGrantError
-exception_map["invalid_scope"] = InvalidScopeError
-exception_map["invalid_request"] = InvalidRequestError
-exception_map["invalid_scope"] = InvalidScopeError
-exception_map["server_error"] = ServerError
-exception_map["temporarily_unavailable"] = TemporarilyUnavailableError
-exception_map["unauthorized_client"] = UnauthorizedClientError
-exception_map["unsupported_grant_type"] = UnsupportedGrantType
-exception_map["unsupported_response_type"] = UnsupportedResponseTypeError
-
+    error_name = "invalid_grant"
 
 class InvalidHttpStatusError(BaseException):
     pass
 
+class InvalidScopeError(BaseError):
+    error_name = "invalid_scope"
+
+class InvalidStateError(BaseException):
+    pass
+
+class InvalidRequestError(BaseError):
+    error_name = "invalid_request"
+
+class ServerError(BaseError):
+    error_name = "server_error"
+
+class TemporarilyUnavailableError(BaseError):
+    error_name = "temporarily_unavailable"
+
+class UnauthorizedClientError(BaseError):
+    error_name = "unauthorized_client"
+
+class UnsupportedGrantType(BaseError):
+    error_name = "unsupported_grant_type"
+
+class UnsupportedResponseTypeError(BaseError):
+    error_name = "unsupported_response_type"
+
+def exception_factory(error_name, data):
+    for cls in BaseError.__subclasses__():
+        if cls.error_name == error_name:
+            return cls(data)
+
+    raise NotImplementedError("Unhandled error: %s" % error_name)

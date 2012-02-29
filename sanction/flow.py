@@ -1,6 +1,6 @@
 from urllib import urlencode
 
-from sanction.exceptions import exception_map
+from sanction.exceptions import exception_factory
 from sanction.exceptions import InvalidStateError
 from sanction.util import safe_get
 
@@ -107,8 +107,7 @@ class AuthorizationRequestFlow(BaseFlow, AuthorizationEndpointMixIn):
             return
 
         elif "error" in data:
-            if data["error"] in exception_map:
-                raise exception_map[data["error"]](data)
+            raise exception_factory(data["error"], data)
 
 
         raise Exception("Unhandled authorization data received")
