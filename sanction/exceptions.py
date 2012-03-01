@@ -3,8 +3,6 @@ from abc import abstractproperty
 
 from sanction.util import safe_get
 
-exception_map = {}
-
 class BaseError(BaseException):
     __metaclass__ = ABCMeta
 
