@@ -45,8 +45,22 @@ class InvalidClientError(BaseError):
 class InvalidGrantError(BaseError):
     error_name = "invalid_grant"
 
-class InvalidHttpStatusError(BaseException):
-    pass
+class InvalidHTTPStatusError(BaseException):
+    def __init__(self, status, reason):
+        self.__status = status
+        self.__reason = reason
+    
+    def __str__(self):
+        return "%s (%d)" % (self.__reason,
+            self.__status)
+
+    @property
+    def status(self):
+        return self.__status
+
+    @property
+    def reason(self):
+        return self.__reason
 
 class InvalidScopeError(BaseError):
     error_name = "invalid_scope"

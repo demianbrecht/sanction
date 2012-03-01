@@ -4,8 +4,8 @@ from sanction.util import safe_get
 
 class GoogleAuthorizationRequestFlow(AuthorizationRequestFlow):
 
-    def __init__(self, grant_type):
-        AuthorizationRequestFlow.__init__(self, grant_type)
+    def __init__(self, grant_type, service):
+        AuthorizationRequestFlow.__init__(self, grant_type, service)
         self.__access_type = None
 
 
@@ -22,3 +22,6 @@ class Google(BaseAdapter):
 
         self.flow.authorization_endpoint = \
             "https://accounts.google.com/o/oauth2/auth"
+        self.flow.token_endpoint = \
+            "https://accounts.google.com/o/oauth2/token"
+

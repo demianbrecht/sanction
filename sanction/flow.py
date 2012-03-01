@@ -44,10 +44,11 @@ class BaseEndpointMixIn(object):
 
 class BaseFlow(BaseEndpointMixIn):
 
-    def __init__(self, grant_type, config):
+    def __init__(self, grant_type, config, service):
         BaseEndpointMixIn.__init__(self)
         self.__grant_type = grant_type
         self.__config = config
+        self.__service = service
 
 
     @property
@@ -58,6 +59,10 @@ class BaseFlow(BaseEndpointMixIn):
     def grant_type(self):
         return self.__grant_type
 
+    @property
+    def service(self):
+        return self.__service
+
 
     def add_optional_attr(self, name, attr, obj):
         if attr is not None:
@@ -67,8 +72,8 @@ class BaseFlow(BaseEndpointMixIn):
 
 class AuthorizationRequestFlow(BaseFlow, AuthorizationEndpointMixIn):
 
-    def __init__(self, config):
-        BaseFlow.__init__(self, "authorization_code", config)
+    def __init__(self, config, service):
+        BaseFlow.__init__(self, "authorization_code", config, service)
         AuthorizationEndpointMixIn.__init__(self)
 
         self.__client_id = safe_get("client_id", config, required=True)
@@ -98,7 +103,6 @@ class AuthorizationRequestFlow(BaseFlow, AuthorizationEndpointMixIn):
                 if expected_state != data["state"]:
                     raise InvalidStateError()
 
-                        
             #TODO: Return credentials
             return
 

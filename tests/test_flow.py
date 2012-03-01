@@ -7,17 +7,21 @@ class TestBaseFlow(TestCase):
     def test_inst(self):
         from sanction.adapters import BaseAdapter
         from sanction.flow import BaseFlow
+        from sanction.services import HTTPSService
+
         adapter = BaseAdapter(get_config())
-        f = BaseFlow("grant_type", adapter)
+        f = BaseFlow("grant_type", adapter, HTTPSService())
 
         self.assertEquals(f.grant_type, "grant_type")
 
     def test_optional_attr(self):
         from sanction.adapters import BaseAdapter
         from sanction.flow import BaseFlow
+        from sanction.services import HTTPSService
+
         self.__test_attr = "test"
 
-        f = BaseFlow("grant_type", BaseAdapter(get_config()))
+        f = BaseFlow("grant_type", BaseAdapter(get_config()), HTTPSService())
         
         d = {}
         f.add_optional_attr("test_attr", self.__test_attr, d)
