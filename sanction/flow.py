@@ -19,7 +19,7 @@ class AuthorizationEndpointMixIn(object):
         self.__authorization_endpoint = value
 
 
-class BaseEndpointMixIn(object):
+class ResourceEndpointMixIn(object):
 
     def __init__(self):
         self.__token_endpoint = None
@@ -42,26 +42,21 @@ class BaseEndpointMixIn(object):
         self.__resource_endpoint = value
 
 
-class BaseFlow(BaseEndpointMixIn):
 
-    def __init__(self, grant_type, config, service):
-        BaseEndpointMixIn.__init__(self)
+class ResourceFlow(object):
+
+    def __init__(self, grant_type, adapter):
         self.__grant_type = grant_type
-        self.__config = config
-        self.__service = service
+        self.__adapter = adapter
 
-
-    @property
-    def config(self):
-        return self.__config
 
     @property
     def grant_type(self):
         return self.__grant_type
 
     @property
-    def service(self):
-        return self.__service
+    def adapter(self):
+        return self.__adapter
 
 
     def add_optional_attr(self, name, attr, obj):
@@ -70,17 +65,18 @@ class BaseFlow(BaseEndpointMixIn):
 
 
 
-class AuthorizationRequestFlow(BaseFlow, AuthorizationEndpointMixIn):
+class AuthorizationRequestFlow(ResourceFlow):
 
-    def __init__(self, config, service):
-        BaseFlow.__init__(self, "authorization_code", config, service)
-        AuthorizationEndpointMixIn.__init__(self)
+    def __init__(self, adapter):
+        assert(isinstance(adapter, AuthorizationEndpointMixIn))
+        ResourceFlow.__init__(self, "authorization_code", adapter)
 
-        self.__client_id = safe_get("client_id", config, required=True)
-        self.__client_secret = safe_get("client_secret", config,
+        self.__client_id = safe_get("client_id", adapter.config, 
             required=True)
-        self.__redirect_uri = safe_get("redirect_uri", config)
-        self.__scope = safe_get("scope", config)
+        self.__client_secret = safe_get("client_secret", adapter.config,
+            required=True)
+        self.__redirect_uri = safe_get("redirect_uri", adapter.config)
+        self.__scope = safe_get("scope", adapter.config)
 
 
     def authorization_uri(self, state=None):
@@ -93,7 +89,7 @@ class AuthorizationRequestFlow(BaseFlow, AuthorizationEndpointMixIn):
         self.add_optional_attr("scope", self.__scope, data)
         self.add_optional_attr("state", state, data)
 
-        return "%s?%s" % (self.authorization_endpoint, urlencode(data))
+        return "%s?%s" % (self.adapter.authorization_endpoint, urlencode(data))
 
 
     def authorization_received(self, data, expected_state=None):

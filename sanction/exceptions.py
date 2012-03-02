@@ -1,12 +1,16 @@
 from abc import ABCMeta
 from abc import abstractproperty
+from logging import getLogger
 
 from sanction.util import safe_get
+
+log = getLogger(__name__)
 
 class BaseError(BaseException):
     __metaclass__ = ABCMeta
 
     def __init__(self, response):
+        log.info(response)        
         self.__description = safe_get("description", response)
         self.__error_uri = safe_get("error_uri", response)
         self.__state = safe_get("state", response)
@@ -30,18 +34,20 @@ class BaseError(BaseException):
 
 
     def __str__(self):
-        return "<%s: %s>" % (self.__class__.__name__,
-            self.__description)
+        return "%s" % self.__description
 
 
 class AccessDeniedError(BaseError):
     error_name = "access_denied"
 
+
 class InvalidClientError(BaseError):
     error_name = "invalid_client"
 
+
 class InvalidGrantError(BaseError):
     error_name = "invalid_grant"
+
 
 class InvalidHTTPStatusError(BaseException):
     def __init__(self, status, reason):
@@ -90,3 +96,4 @@ def exception_factory(error_name, data):
             return cls(data)
 
     raise NotImplementedError("Unhandled error: %s" % error_name)
+

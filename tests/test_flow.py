@@ -1,27 +1,45 @@
 from unittest import TestCase
 
 from . import get_config
+from . import TestAdapterImpl
 
-class TestBaseFlow(TestCase):
+
+class TestResourceEndpointMixIn(TestCase):
+
+    def test_inst(self):
+        from sanction.flow import ResourceEndpointMixIn
+        ep = ResourceEndpointMixIn()
+        self.assertIsNone(ep.token_endpoint)
+        self.assertIsNone(ep.resource_endpoint)
+
+        ep.token_endpoint = "foo"
+        self.assertEquals(ep.token_endpoint, "foo")
+
+        ep.resource_endpoint = "bar"
+        self.assertEquals(ep.resource_endpoint, "bar")
+
+
+class TestResourceFlow(TestCase):
     
     def test_inst(self):
-        from sanction.adapters import BaseAdapter
-        from sanction.flow import BaseFlow
+        from sanction.flow import ResourceFlow
         from sanction.services import HTTPSService
 
-        adapter = BaseAdapter(get_config())
-        f = BaseFlow("grant_type", adapter, HTTPSService())
+        adapter = TestAdapterImpl(get_config())
+        f = ResourceFlow("grant_type", adapter)
 
         self.assertEquals(f.grant_type, "grant_type")
+        self.assertEquals(f.adapter, adapter)
+
 
     def test_optional_attr(self):
         from sanction.adapters import BaseAdapter
-        from sanction.flow import BaseFlow
+        from sanction.flow import ResourceFlow
         from sanction.services import HTTPSService
 
         self.__test_attr = "test"
 
-        f = BaseFlow("grant_type", BaseAdapter(get_config()), HTTPSService())
+        f = ResourceFlow("grant_type", TestAdapterImpl(get_config()))
         
         d = {}
         f.add_optional_attr("test_attr", self.__test_attr, d)
@@ -34,61 +52,48 @@ class TestAuthorizationRequestFlow(TestCase):
         from urlparse import urlparse
         from urlparse import parse_qsl
         from sanction.flow import AuthorizationRequestFlow
-        from sanction.adapters.google import Google
 
-        a = Google(get_config())
-        uri = a.flow.authorization_uri()
-        d = urlparse(uri)
+        f = AuthorizationRequestFlow(TestAdapterImpl(get_config()))
 
-        self.assertEquals(d.netloc, "accounts.google.com")
-        qs = dict(parse_qsl(d.query))
+        uri = urlparse(f.authorization_uri())
+        qs = dict(parse_qsl(uri.query))
 
         c = get_config()
-        self.assertEquals(qs["redirect_uri"], c["google.redirect_uri"])
-        self.assertEquals(qs["scope"], c["google.scope"])
-        self.assertEquals(qs["access_type"], c["google.access_type"])
+        self.assertEquals(qs["scope"], c["testadapterimpl.scope"])
+        self.assertEquals(qs["redirect_uri"], 
+            c["testadapterimpl.redirect_uri"])
         self.assertEquals(qs["response_type"], "code")
-        self.assertEquals(qs["client_id"], c["google.client_id"])
+        self.assertEquals(qs["client_id"], c["testadapterimpl.client_id"])
 
 
     def test_authorization_received(self):
         from sanction.flow import AuthorizationRequestFlow
-        from sanction.adapters.google import Google
         from sanction.exceptions import InvalidStateError
+        from sanction.exceptions import InvalidClientError
 
-        a = Google(get_config())
-        a.flow.authorization_received({
-            "code": "test_code"
+        a = TestAdapterImpl(get_config())
+
+        #unhandled data
+        try:
+            a.flow.authorization_received({})
+            self.fail()
+        except Exception:
+            pass
+
+
+        cred = a.flow.authorization_received({
+            "code": "test_code",
+            "token_type": "Bearer"
         })
-
-        a.flow.authorization_received({
-            "code":"test_code",
-            "state":"test_state"
-        }, expected_state="test_state")
+        #TODO: Test credentials
 
         try:
             a.flow.authorization_received({
-                "code": "test_code",
-                "state": "test_state"
-            }, expected_state="foo")
-            self.fail()
-        except InvalidStateError:
-            pass
-
-        try:
-            a.flow.authorization_received({
-                "error":"test"
+                "error":"invalid_client",
+                "description":"test"
             })
             self.fail()
-        except:
+        except InvalidClientError:
             pass
 
-
-        try:
-            a.flow.authorization_received({
-                "foo":"bar"
-            })
-            self.fail()
-        except:
-            pass
 

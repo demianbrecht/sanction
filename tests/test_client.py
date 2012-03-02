@@ -6,8 +6,4 @@ class TestClient(TestCase):
 
     def test_inst(self):
         from sanction.client import Client
-        from sanction.adapters.google import Google
 
-        c = Client(Google, get_config())
-
-        self.assertTrue(isinstance(c.adapter, Google))
