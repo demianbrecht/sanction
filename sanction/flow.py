@@ -1,45 +1,30 @@
+from abc import ABCMeta
+from abc import abstractproperty
+from logging import getLogger
 from urllib import urlencode
 
 from sanction.exceptions import exception_factory
 from sanction.exceptions import InvalidStateError
 from sanction.util import safe_get
 
-
-class AuthorizationEndpointMixIn(object):
-
-    def __init__(self):
-        self.__authorization_endpoint = None
-
-    @property
-    def authorization_endpoint(self):
-        return self.__authorization_endpoint
-
-    @authorization_endpoint.setter
-    def authorization_endpoint(self, value):
-        self.__authorization_endpoint = value
-
+log = getLogger(__name__)
 
 class ResourceEndpointMixIn(object):
+    __metaclass__ = ABCMeta
 
-    def __init__(self):
-        self.__token_endpoint = None
-        self.__resource_endpoint = None
+    @abstractproperty
+    def token_endpoint(self): pass #pragma: no cover
 
-    @property
-    def token_endpoint(self):
-        return self.__token_endpoint
+    @abstractproperty
+    def resource_endpoint(self): pass #pragma: no cover
 
-    @token_endpoint.setter
-    def token_endpoint(self, value):
-        self.__token_endpoint = value
 
-    @property
-    def resource_endpoint(self):
-        return self.__resource_endpoint
+class AuthorizationEndpointMixIn(ResourceEndpointMixIn):
+    __metaclass__ = ABCMeta
 
-    @resource_endpoint.setter
-    def resource_endpoint(self, value):
-        self.__resource_endpoint = value
+    @abstractproperty
+    def authorization_endpoint(self): pass #pragma: no cover
+
 
 
 
@@ -69,6 +54,8 @@ class AuthorizationRequestFlow(ResourceFlow):
 
     def __init__(self, adapter):
         assert(isinstance(adapter, AuthorizationEndpointMixIn))
+        assert(isinstance(adapter, ResourceEndpointMixIn))
+
         ResourceFlow.__init__(self, "authorization_code", adapter)
 
         self.__client_id = safe_get("client_id", adapter.config, 
@@ -93,13 +80,16 @@ class AuthorizationRequestFlow(ResourceFlow):
 
 
     def authorization_received(self, data, expected_state=None):
-
         if "code" in data:
             if expected_state is not None:
                 if expected_state != data["state"]:
-                    raise InvalidStateError()
+                    raise InvalidStateError("Expected %s, got %s." % (
+                        expected_state, data["state"]))
 
             #TODO: Return credentials
+            self.adapter.service.request(self.adapter.token_endpoint, headers={
+                "code": data["code"]
+            }, method="POST")
             return
 
         elif "error" in data:

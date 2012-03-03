@@ -17,12 +17,4 @@ class TestAdapter(TestCase):
         self.assertEquals(a.config["client_id"], "base_id")
 
 
-class TestAuthorizationEndpointMixIn(TestCase):
-    def test_init(self):
-        from sanction.flow import AuthorizationEndpointMixIn
-        a = AuthorizationEndpointMixIn()
 
-        self.assertIsNone(a.authorization_endpoint)
-        
-        a.authorization_endpoint = "foo"
-        self.assertEquals(a.authorization_endpoint, "foo")

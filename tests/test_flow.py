@@ -1,22 +1,65 @@
+import socket
+
+from BaseHTTPServer import BaseHTTPRequestHandler
+from BaseHTTPServer import HTTPServer
+from json import dumps
+from logging import getLogger
+from OpenSSL import SSL
+from SocketServer import BaseServer
+from threading import Event
+from threading import Thread
+
 from unittest import TestCase
 
 from . import get_config
 from . import TestAdapterImpl
+from . import test_port
+from . import test_uri
+
+log = getLogger(__name__)
+
+class RequestHandler(BaseHTTPRequestHandler):
+    def shutdown(self, param):
+        BaseHTTPRequestHandler.shutdown(self)
+
+    def setup(self):
+        self.connection = self.request
+        self.rfile = socket._fileobject(self.request, "rb", self.rbufsize)
+        self.wfile = socket._fileobject(self.request, "wb", self.wbufsize)
+
+    def do_GET(self):
+        self.send_response(404)
+
+    def do_POST(self):
+        if self.path == "/token":
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
+
+            self.wfile.write(dumps({
+                "access_token":"test_token",
+                "token_type":"Bearer"
+            }))
 
 
-class TestResourceEndpointMixIn(TestCase):
+class TestServer(HTTPServer):
+    def __init__(self, e):
+        BaseServer.__init__(self, ("", test_port), RequestHandler)
+        ctx = SSL.Context(SSL.SSLv23_METHOD)
 
-    def test_inst(self):
-        from sanction.flow import ResourceEndpointMixIn
-        ep = ResourceEndpointMixIn()
-        self.assertIsNone(ep.token_endpoint)
-        self.assertIsNone(ep.resource_endpoint)
+        pem = "tests/cert.pem"
+        ctx.use_privatekey_file(pem)
+        ctx.use_certificate_file(pem)
 
-        ep.token_endpoint = "foo"
-        self.assertEquals(ep.token_endpoint, "foo")
+        self.socket = SSL.Connection(ctx, socket.socket(self.address_family,
+            self.socket_type))
 
-        ep.resource_endpoint = "bar"
-        self.assertEquals(ep.resource_endpoint, "bar")
+        self.server_bind()
+        self.server_activate()
+        e.set()
+
+    def shutdown_request(self, foo):
+        pass
 
 
 class TestResourceFlow(TestCase):
@@ -81,11 +124,13 @@ class TestAuthorizationRequestFlow(TestCase):
             pass
 
 
+        start_server()
         cred = a.flow.authorization_received({
             "code": "test_code",
             "token_type": "Bearer"
         })
         #TODO: Test credentials
+
 
         try:
             a.flow.authorization_received({
@@ -96,4 +141,26 @@ class TestAuthorizationRequestFlow(TestCase):
         except InvalidClientError:
             pass
 
+
+        #invalid state
+        try:
+            a.flow.authorization_received({
+                "code":"test",
+                "state":"foo"
+            }, expected_state="bar")
+            self.fail()
+        except InvalidStateError:
+            pass
+
+
+def start_server():
+    e = Event()
+    t = Thread(target=spawn_server, args=(e,))
+    t.daemon = True
+    t.start()
+    e.wait()
+
+def spawn_server(e):
+    s = TestServer(e)
+    s.handle_request()
 

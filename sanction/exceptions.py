@@ -10,6 +10,8 @@ class BaseError(BaseException):
     __metaclass__ = ABCMeta
 
     def __init__(self, response):
+        # when running this through nosetests, description isn't populated
+        # unless this log line here. wtf? TODO: Find out why
         log.info(response)        
         self.__description = safe_get("description", response)
         self.__error_uri = safe_get("error_uri", response)

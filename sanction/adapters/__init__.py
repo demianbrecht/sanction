@@ -31,3 +31,6 @@ class BaseAdapter(object):
         return self.__config
 
 
+    @property
+    def service(self):
+        return self.__service

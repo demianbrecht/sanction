@@ -2,9 +2,12 @@ from abc import ABCMeta
 from abc import abstractmethod
 from httplib import HTTPConnection
 from httplib import HTTPSConnection
+from logging import getLogger
 from urlparse import urlparse
 
 from sanction.exceptions import InvalidHTTPStatusError
+
+log = getLogger(__name__)
 
 class BaseService(object):
     __metaclass__ = ABCMeta
@@ -31,7 +34,8 @@ class HTTPSService(BaseService, HTTPRequestMixIn):
         o = urlparse(uri)
         assert(str(o.scheme) == "https")
 
-        c = HTTPSConnection(o.netloc, o.port)
+        c = HTTPSConnection(o.netloc)
+
 
         data = self.fetch(c, o.path, method, body, headers)
 
