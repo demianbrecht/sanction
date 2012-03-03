@@ -4,7 +4,7 @@ py-sanction
 
 
 .. contents:: Table of Contents 
-    :depth: 2
+    :depth: 3
 
 
 :warning: This module is in WIP state and should not be used until this message
