@@ -12,7 +12,6 @@ class BaseError(BaseException):
     def __init__(self, response):
         # when running this through nosetests, description isn't populated
         # unless this log line here. wtf? TODO: Find out why
-        log.info(response)        
         self.__description = safe_get("description", response)
         self.__error_uri = safe_get("error_uri", response)
         self.__state = safe_get("state", response)
@@ -56,7 +55,7 @@ class InvalidHTTPStatusError(BaseException):
         self.__status = status
         self.__reason = reason
     
-    def __str__(self):
+    def __str__(self): #pragma: no cover
         return "%s (%d)" % (self.__reason,
             self.__status)
 

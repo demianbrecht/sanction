@@ -1,8 +1,10 @@
 from abc import ABCMeta
 from abc import abstractproperty
+from json import loads
 from logging import getLogger
 from urllib import urlencode
 
+from sanction.credentials import credentials_factory
 from sanction.exceptions import exception_factory
 from sanction.exceptions import InvalidStateError
 from sanction.util import safe_get
@@ -86,15 +88,14 @@ class AuthorizationRequestFlow(ResourceFlow):
                     raise InvalidStateError("Expected %s, got %s." % (
                         expected_state, data["state"]))
 
-            #TODO: Return credentials
-            self.adapter.service.request(self.adapter.token_endpoint, headers={
-                "code": data["code"]
-            }, method="POST")
-            return
+            o = loads(self.adapter.service.request(self.adapter.token_endpoint,
+                headers={"code": data["code"]}, method="POST"))
+
+            self.adapter.credentials = credentials_factory(o["token_type"], o)
+            return self.adapter.credentials 
 
         elif "error" in data:
             raise exception_factory(data["error"], data)
-
 
         raise Exception("Unhandled authorization data received")
 

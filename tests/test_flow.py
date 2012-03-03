@@ -4,6 +4,7 @@ from BaseHTTPServer import BaseHTTPRequestHandler
 from BaseHTTPServer import HTTPServer
 from json import dumps
 from logging import getLogger
+
 from OpenSSL import SSL
 from SocketServer import BaseServer
 from threading import Event
@@ -15,51 +16,9 @@ from . import get_config
 from . import TestAdapterImpl
 from . import test_port
 from . import test_uri
+from . import start_server
 
 log = getLogger(__name__)
-
-class RequestHandler(BaseHTTPRequestHandler):
-    def shutdown(self, param):
-        BaseHTTPRequestHandler.shutdown(self)
-
-    def setup(self):
-        self.connection = self.request
-        self.rfile = socket._fileobject(self.request, "rb", self.rbufsize)
-        self.wfile = socket._fileobject(self.request, "wb", self.wbufsize)
-
-    def do_GET(self):
-        self.send_response(404)
-
-    def do_POST(self):
-        if self.path == "/token":
-            self.send_response(200)
-            self.send_header("Content-type", "application/json")
-            self.end_headers()
-
-            self.wfile.write(dumps({
-                "access_token":"test_token",
-                "token_type":"Bearer"
-            }))
-
-
-class TestServer(HTTPServer):
-    def __init__(self, e):
-        BaseServer.__init__(self, ("", test_port), RequestHandler)
-        ctx = SSL.Context(SSL.SSLv23_METHOD)
-
-        pem = "tests/cert.pem"
-        ctx.use_privatekey_file(pem)
-        ctx.use_certificate_file(pem)
-
-        self.socket = SSL.Connection(ctx, socket.socket(self.address_family,
-            self.socket_type))
-
-        self.server_bind()
-        self.server_activate()
-        e.set()
-
-    def shutdown_request(self, foo):
-        pass
 
 
 class TestResourceFlow(TestCase):
@@ -110,7 +69,9 @@ class TestAuthorizationRequestFlow(TestCase):
 
 
     def test_authorization_received(self):
+        from sanction.credentials import BearerCredentials
         from sanction.flow import AuthorizationRequestFlow
+        from sanction.exceptions import InvalidHTTPStatusError
         from sanction.exceptions import InvalidStateError
         from sanction.exceptions import InvalidClientError
 
@@ -129,8 +90,15 @@ class TestAuthorizationRequestFlow(TestCase):
             "code": "test_code",
             "token_type": "Bearer"
         })
-        #TODO: Test credentials
+        self.assertTrue(isinstance(cred, BearerCredentials))
 
+        start_server()
+        try:
+            a.request("/invalid")
+            self.fail()
+        except InvalidHTTPStatusError as e:
+            self.assertEquals(e.reason, "Not Found")
+            
 
         try:
             a.flow.authorization_received({
@@ -151,16 +119,4 @@ class TestAuthorizationRequestFlow(TestCase):
             self.fail()
         except InvalidStateError:
             pass
-
-
-def start_server():
-    e = Event()
-    t = Thread(target=spawn_server, args=(e,))
-    t.daemon = True
-    t.start()
-    e.wait()
-
-def spawn_server(e):
-    s = TestServer(e)
-    s.handle_request()
 

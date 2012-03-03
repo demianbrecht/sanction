@@ -36,7 +36,6 @@ class HTTPSService(BaseService, HTTPRequestMixIn):
 
         c = HTTPSConnection(o.netloc)
 
-
         data = self.fetch(c, o.path, method, body, headers)
 
         c.close()

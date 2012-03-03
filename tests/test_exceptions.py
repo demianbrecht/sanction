@@ -33,3 +33,4 @@ class TestBaseError(TestCase):
             e = exception_factory("foo", {})
             self.fail()
         except: pass
+

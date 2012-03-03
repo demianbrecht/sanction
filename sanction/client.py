@@ -4,12 +4,9 @@ from adapters import BaseAdapter
 
 class Client(object):
 
-    def __init__(self, adapter, config, flow=AuthorizationRequestFlow,
-            key_file=None, cert_file=None):
+    def __init__(self, adapter, config, flow=AuthorizationRequestFlow):
         assert(issubclass(adapter, BaseAdapter))
         self.__adapter = adapter(config, flow)
-        self.__adapter.key_file = key_file
-        self.__adapter.cert_file = cert_file
 
 
     @property
@@ -22,3 +19,5 @@ class Client(object):
         return self.__adapter.flow
 
 
+    def request(self, path, method="GET", body=None):
+        self.adapter.request(path, method, body)
