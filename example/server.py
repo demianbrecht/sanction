@@ -73,7 +73,6 @@ class Handler(BaseHTTPRequestHandler):
 
         self.wfile.write("Access token: %s<br>" % cred.access_token)
         self.wfile.write("Type: %s<br>" % cred.token_type)
-        #self.wfile.write("Expires: %s<br>" % p.expires_in)
 
         self.wfile.write(d)
 
