@@ -1,4 +1,7 @@
+from json import loads
 from unittest import TestCase
+
+from . import start_server
 
 class TestHTTPSServices(TestCase):
 
@@ -7,13 +10,14 @@ class TestHTTPSServices(TestCase):
         from sanction.exceptions import InvalidHTTPStatusError
         s = HTTPSService()
 
-        d = s.request(
-            "https://accounts.google.com/ServiceLogin?service=mail")
-        self.assertIsNotNone(d)
-
+        start_server()
         try:
-            s.request("https://google.com")
+            d = s.request("https://localhost:4242")
             self.fail()
-
         except InvalidHTTPStatusError as e:
-            self.assertEquals(e.status, 301)
+            self.assertEquals(e.status, 404)
+
+        start_server()
+        d = loads(s.request("https://localhost:4242/resource/me"))
+        self.assertEquals(d["foo"], "bar")
+

@@ -11,7 +11,8 @@ class TestCredentialsFactory(TestCase):
         c = credentials_factory("Bearer", data)
         self.assertEquals(c.access_token, data["access_token"])
 
-        self.assertEquals(c.http_header(), {"Bearer": data["access_token"]})
+        self.assertEquals(c.http_header(), {"Authorization": "Bearer %s" % 
+            data["access_token"]})
 
         self.assertEquals(c.query_param(), "access_token=%s" %
            data["access_token"])
