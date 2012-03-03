@@ -28,8 +28,6 @@ class AuthorizationEndpointMixIn(ResourceEndpointMixIn):
     def authorization_endpoint(self): pass #pragma: no cover
 
 
-
-
 class ResourceFlow(object):
 
     def __init__(self, grant_type, adapter):
@@ -81,6 +79,10 @@ class AuthorizationRequestFlow(ResourceFlow):
         return "%s?%s" % (self.adapter.authorization_endpoint, urlencode(data))
 
 
+    def parse_access_token(self, data):
+        return loads(data)
+
+
     def authorization_received(self, data, expected_state=None):
         if "code" in data:
             if expected_state is not None:
@@ -88,8 +90,8 @@ class AuthorizationRequestFlow(ResourceFlow):
                     raise InvalidStateError("Expected %s, got %s." % (
                         expected_state, data["state"]))
 
-            o = loads(self.adapter.service.request(self.adapter.token_endpoint,
-                body=urlencode({
+            o = self.parse_access_token(self.adapter.service.request(
+                self.adapter.token_endpoint, body=urlencode({
                     "code": data["code"],
                     "client_id": self.__client_id,
                     "client_secret": self.__client_secret,

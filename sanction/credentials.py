@@ -16,7 +16,7 @@ class BaseCredentials(object):
 
 
 class BearerCredentials(BaseCredentials):
-    token_type = "bearer"
+    token_type = "Bearer"
 
     def __init__(self, data):
         self.__access_token = data["access_token"] 
@@ -43,7 +43,7 @@ class BearerCredentials(BaseCredentials):
 
 def credentials_factory(token_type, data):
     for cls in BaseCredentials.__subclasses__():
-        if cls.token_type == token_type.lower():
+        if cls.token_type == token_type:
             return cls(data)
 
     raise NotImplementedError("Unhandled credentials type: %s" % token_type)
