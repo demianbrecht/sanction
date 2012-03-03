@@ -31,3 +31,17 @@ class TestAdapter(TestCase):
         r = loads(a.request("/me"))
         
         self.assertEquals(r["foo"], "bar")
+
+
+class TestGoogle(TestCase):
+    def test_flow(self):
+        from urlparse import urlparse
+
+        from sanction.adapters.google import Google
+        from sanction.adapters.google import GoogleAuthorizationRequestFlow
+
+        f = GoogleAuthorizationRequestFlow(Google(get_config()))
+        uri = urlparse(f.authorization_uri())
+
+        self.assertEquals(uri.netloc, "accounts.google.com")
+        self.assertEquals(uri.scheme, "https")
