@@ -6,10 +6,10 @@ test:
 		.coveragerc --pdb-failures --pdb --cov-report term-missing\
 		./tests
 	
-ctags:
-	ctags -R --c++-kinds=+p --fields=+iaS --extra=+q --python-kinds=-i .
-
 clean:
 	find . -name "*.pyc" | xargs rm
 
-.PHONY: test 
+example:
+	cd example; python server.py
+
+.PHONY: test clean example 

@@ -20,4 +20,4 @@ class Client(object):
 
 
     def request(self, path, method="GET", body=None):
-        self.adapter.request(path, method, body)
+        return self.adapter.request(path, method, body)

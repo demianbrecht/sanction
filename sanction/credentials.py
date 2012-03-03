@@ -34,7 +34,7 @@ class BearerCredentials(BaseCredentials):
 
     def http_header(self):
         return {
-            "Bearer": self.__access_token
+            "Authorization": "%s %s" % ("Bearer", self.__access_token)
         }
 
     def query_param(self):

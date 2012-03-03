@@ -75,7 +75,7 @@ class AuthorizationRequestFlow(ResourceFlow):
             "client_id": self.__client_id 
         }
         self.add_optional_attr("redirect_uri", self.__redirect_uri, data)
-        self.add_optional_attr("scope", self.__scope, data)
+        self.add_optional_attr("scope", " ".join(self.__scope.split(",")), data)
         self.add_optional_attr("state", state, data)
 
         return "%s?%s" % (self.adapter.authorization_endpoint, urlencode(data))
@@ -89,7 +89,14 @@ class AuthorizationRequestFlow(ResourceFlow):
                         expected_state, data["state"]))
 
             o = loads(self.adapter.service.request(self.adapter.token_endpoint,
-                headers={"code": data["code"]}, method="POST"))
+                body=urlencode({
+                    "code": data["code"],
+                    "client_id": self.__client_id,
+                    "client_secret": self.__client_secret,
+                    "redirect_uri": self.__redirect_uri,
+                    "grant_type": "authorization_code"
+                }), method="POST", headers={"Content-type":
+                "application/x-www-form-urlencoded"}))
 
             self.adapter.credentials = credentials_factory(o["token_type"], o)
             return self.adapter.credentials 
