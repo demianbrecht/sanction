@@ -4,7 +4,7 @@ from adapters import BaseAdapter
 
 class Client(object):
 
-    def __init__(self, adapter, config, flow=AuthorizationRequestFlow):
+    def __init__(self, adapter, config, flow=None):
         assert(issubclass(adapter, BaseAdapter))
         self.__adapter = adapter(config, flow)
 

@@ -12,7 +12,8 @@ py-sanction
 
 Overview
 --------
-py-sanction a fully tested, extensible client implementation of the OAuth2 
+py-sanction a fully tested, 100% protocol-compilant, extensible client 
+implementation of the OAuth2 
 protocol [#]_. The goal of this project that sets it apart from other 
 implementations is that it aims to provide a core implementation that adheres
 to the OAuth2 protocol, while exposing an interface that allows for trivial 

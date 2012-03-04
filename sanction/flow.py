@@ -65,6 +65,21 @@ class AuthorizationRequestFlow(ResourceFlow):
         self.__redirect_uri = safe_get("redirect_uri", adapter.config)
         self.__scope = safe_get("scope", adapter.config)
 
+    @property
+    def client_id(self):
+        return self.__client_id
+
+    @property
+    def client_secret(self):
+        return self.__client_secret
+
+    @property
+    def redirect_uri(self):
+        return self.__redirect_uri
+
+    @property
+    def scope(self):
+        return self.__scope
 
     def authorization_uri(self, state=None):
 
@@ -72,8 +87,8 @@ class AuthorizationRequestFlow(ResourceFlow):
             "response_type": "code",
             "client_id": self.__client_id 
         }
-        self.add_optional_attr("redirect_uri", self.__redirect_uri, data)
-        self.add_optional_attr("scope", " ".join(self.__scope.split(",")), data)
+        self.add_optional_attr("redirect_uri", self.redirect_uri, data)
+        self.add_optional_attr("scope", " ".join(self.scope.split(",")), data)
         self.add_optional_attr("state", state, data)
 
         return "%s?%s" % (self.adapter.authorization_endpoint, urlencode(data))
@@ -93,9 +108,9 @@ class AuthorizationRequestFlow(ResourceFlow):
             o = self.parse_access_token(self.adapter.service.request(
                 self.adapter.token_endpoint, body=urlencode({
                     "code": data["code"],
-                    "client_id": self.__client_id,
-                    "client_secret": self.__client_secret,
-                    "redirect_uri": self.__redirect_uri,
+                    "client_id": self.client_id,
+                    "client_secret": self.client_secret,
+                    "redirect_uri": self.redirect_uri,
                     "grant_type": "authorization_code"
                 }), method="POST", headers={"Content-type":
                 "application/x-www-form-urlencoded"}))

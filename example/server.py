@@ -10,6 +10,7 @@ from urlparse import parse_qsl
 
 from sanction.client import Client
 from sanction.adapters.google import Google
+from sanction.adapters.facebook import Facebook
 
 logging.basicConfig(format="%(message)s")
 l = logging.getLogger(__name__)
@@ -32,7 +33,9 @@ class Handler(BaseHTTPRequestHandler):
     route_handlers = {
         "/": "handle_root",
         "/login/google": "handle_google_login",
-        "/oauth2/google": "handle_google"
+        "/oauth2/google": "handle_google",
+        "/login/facebook": "handle_facebook_login",
+        "/oauth2/facebook": "handle_facebook"
     }
 
     def do_GET(self):
@@ -49,7 +52,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-type", "text/html")
         self.end_headers()
         self.wfile.write('''
-            login with: <a href="/oauth2/google">Google</a>
+            login with: <a href="/oauth2/google">Google</a>,
+            <a href="/oauth2/facebook">Facebook</a>
         ''')
 
 
@@ -59,6 +63,27 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Location", c.flow.authorization_uri())
         self.end_headers()
 
+    def handle_facebook(self, data):
+        c = Client(Facebook, get_config())
+        self.send_response(302)
+        self.send_header("Location", c.flow.authorization_uri())
+        self.end_headers()
+
+    def handle_facebook_login(self, data):
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.log_message(self.path)
+        self.end_headers()
+
+        c = Client(Facebook, get_config())
+        cred = c.flow.authorization_received(data)
+
+        d = c.request("/me")
+
+        self.wfile.write("Access token: %s<br>" % cred.access_token)
+        self.wfile.write("Type: %s<br>" % cred.token_type)
+
+        self.wfile.write(d)
 
     def handle_google_login(self, data):
         self.send_response(200)

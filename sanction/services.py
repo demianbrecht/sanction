@@ -35,8 +35,13 @@ class HTTPSService(BaseService, HTTPRequestMixIn):
         assert(str(o.scheme) == "https")
 
         c = HTTPSConnection(o.netloc)
+        c.set_debuglevel(1)
 
-        data = self.fetch(c, o.path, method, body, headers)
+        uri = "%s?%s" % (o.path, o.query) if o.query != "" else o.path
+        if len(o.query) is None:
+            uri = o.path
+        data = self.fetch(c, uri, method, body, 
+            headers)
 
         c.close()
         return data
