@@ -19,5 +19,5 @@ class Client(object):
         return self.__adapter.flow
 
 
-    def request(self, path, method="GET", body=None):
+    def request(self, path, method=None, body=None):
         return self.adapter.request(path, method, body)

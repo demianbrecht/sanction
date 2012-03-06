@@ -24,10 +24,8 @@ class TestAdapterImpl(BaseAdapter, AuthorizationEndpointMixIn):
     token_endpoint = "%s%s" % (test_uri, "/token")
     resource_endpoint = "%s%s" % (test_uri, "/resource")
 
-    def __init__(self, config, flow=None):
-        if flow is None:
-            flow=AuthorizationRequestFlow
-        BaseAdapter.__init__(self, get_config(), flow=flow)
+    def __init__(self, config, flow=None, service=None):
+        BaseAdapter.__init__(self, get_config(), flow=flow, service=service)
 
 
 def get_config():

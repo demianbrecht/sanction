@@ -3,13 +3,23 @@ from sanction.credentials import BaseCredentials
 from sanction.flow import AuthorizationRequestFlow
 from sanction.flow import ResourceFlow
 from sanction.flow import ResourceEndpointMixIn
+from sanction.services import BaseService
 from sanction.services import HTTPSService
 from sanction.util import safe_get
 
 class BaseAdapter(ResourceEndpointMixIn):
 
-    def __init__(self, config, flow=AuthorizationRequestFlow,
-        service=HTTPSService):
+    def __init__(self, config, flow=None, service=None):
+
+        if flow is None:
+            flow = AuthorizationRequestFlow
+        else:
+            assert(issubclass(flow, ResourceFlow))
+
+        if service is None:
+            service = HTTPSService
+        else:
+            assert(issubclass(service, BaseService))
 
         self.__name = self.__class__.__name__.lower()
         self.__credentials = None
@@ -18,7 +28,7 @@ class BaseAdapter(ResourceEndpointMixIn):
         self.__flow = flow(self)
 
 
-    def request(self, path, method="GET", body=None): 
+    def request(self, path, method=None, body=None): 
         assert(isinstance(self.__credentials, BaseCredentials))
         uri = "%s%s" % (self.resource_endpoint, path)
         return self.service.request(uri, method, body,

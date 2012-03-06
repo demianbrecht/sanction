@@ -18,6 +18,28 @@ class TestAdapter(TestCase):
         
         self.assertEquals(a.config["client_id"], "base_id")
 
+        class DefaultAdapter(BaseAdapter, AuthorizationEndpointMixIn):
+            token_endpoint = ""
+            resource_endpoint = ""
+            authorization_endpoint = ""
+
+        a = DefaultAdapter({
+            "defaultadapter.client_id": "",
+            "defaultadapter.client_secret": "",
+            "defaultadapter.redirect_uri": "",
+            "defaultadapter.scope": ""
+        })
+
+    def test_service(self):
+        from sanction.services import BaseService
+        class TestService(BaseService):
+            def request(self): # required
+                pass
+
+        a = TestAdapterImpl(get_config(), service=TestService)
+
+        self.assertIsNotNone(a)
+
     def test_request(self):
         a = TestAdapterImpl(get_config())
 
@@ -45,3 +67,28 @@ class TestGoogle(TestCase):
 
         self.assertEquals(uri.netloc, "accounts.google.com")
         self.assertEquals(uri.scheme, "https")
+
+
+class TestFacebook(TestCase):
+    def test_flow(self):
+        from urlparse import urlparse
+
+        from sanction.adapters.facebook import Facebook
+        from sanction.adapters.facebook import FacebookAuthorizationRequestFlow
+
+        f = FacebookAuthorizationRequestFlow(Facebook(get_config()))
+        uri = urlparse(f.authorization_uri())
+
+        self.assertEquals(uri.netloc, "www.facebook.com")
+        self.assertEquals(uri.scheme, "https")
+
+    def test_parse(self):
+        from sanction.adapters.facebook import Facebook
+        from sanction.adapters.facebook import FacebookAuthorizationRequestFlow
+
+        f = FacebookAuthorizationRequestFlow(Facebook(get_config()))
+        data = f.parse_access_token("foo=bar&syn=ack")
+
+        self.assertEquals(data["foo"], "bar")
+        self.assertEquals(data["syn"], "ack")
+

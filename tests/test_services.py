@@ -21,3 +21,4 @@ class TestHTTPSServices(TestCase):
         d = loads(s.request("https://localhost:4242/resource/me"))
         self.assertEquals(d["foo"], "bar")
 
+

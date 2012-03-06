@@ -40,7 +40,7 @@ class Facebook(BaseAdapter, AuthorizationEndpointMixIn):
         BaseAdapter.__init__(self, config, 
             flow=flow or FacebookAuthorizationRequestFlow)
 
-    def request(self, path, method="GET", body=None): 
+    def request(self, path, method="GET", body=None): #pragma: no cover 
         assert(isinstance(self.credentials, BaseCredentials))
         uri = "%s%s?%s" % (self.resource_endpoint, path,
             self.credentials.query_param())
