@@ -1,7 +1,3 @@
-py-sanction
-===========
-
-
 
 .. contents:: Table of Contents 
     :depth: 3
