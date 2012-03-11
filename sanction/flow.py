@@ -115,7 +115,8 @@ class AuthorizationRequestFlow(ResourceFlow):
                 }), method="POST", headers={"Content-type":
                 "application/x-www-form-urlencoded"}))
 
-            self.adapter.credentials = credentials_factory(o["token_type"], o)
+            self.adapter.credentials = credentials_factory(o["token_type"],
+                self.adapter.name, o)
             return self.adapter.credentials 
 
         elif "error" in data:

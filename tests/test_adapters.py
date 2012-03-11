@@ -46,7 +46,8 @@ class TestAdapter(TestCase):
         start_server()
         c = a.flow.authorization_received({
             "code":"test_code",
-            "token_type":"Bearer"
+            "token_type":"Bearer",
+            "expires_in":3600
         })
 
         start_server()
@@ -91,4 +92,14 @@ class TestFacebook(TestCase):
 
         self.assertEquals(data["foo"], "bar")
         self.assertEquals(data["syn"], "ack")
+
+    def test_normalize(self):
+        from sanction.adapters.facebook import FacebookCredentials
+
+        c = FacebookCredentials({
+            "token_type": "Bearer",
+            "expires": 3600,
+            "access_token": "my_token"
+        })
+        self.assertEquals(c.expires_in, 3600)
 

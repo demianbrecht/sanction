@@ -3,6 +3,7 @@ from urllib import urlencode
 
 from sanction.adapters import BaseAdapter
 from sanction.credentials import BaseCredentials
+from sanction.credentials import BearerCredentials
 from sanction.flow import AuthorizationRequestFlow
 from sanction.flow import AuthorizationEndpointMixIn
 from sanction.util import safe_get
@@ -30,6 +31,15 @@ class FacebookAuthorizationRequestFlow(AuthorizationRequestFlow):
         data["token_type"] = "Bearer"
         return data 
 
+
+class FacebookCredentials(BearerCredentials):
+    context = "facebook"
+
+    def normalize_token(self, data):
+        return {
+            "access_token": data["access_token"],
+            "expires_in": data["expires"]
+        }
 
 class Facebook(BaseAdapter, AuthorizationEndpointMixIn):
     authorization_endpoint = "https://www.facebook.com/dialog/oauth"

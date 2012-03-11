@@ -88,9 +88,11 @@ class TestAuthorizationRequestFlow(TestCase):
         start_server()
         cred = a.flow.authorization_received({
             "code": "test_code",
-            "token_type": "Bearer"
+            "token_type": "Bearer",
+            "expires_in": 3600
         })
         self.assertTrue(isinstance(cred, BearerCredentials))
+        self.assertEquals(cred.expires_in, 3600)
 
         start_server()
         try:

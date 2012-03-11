@@ -71,7 +71,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             self.wfile.write(dumps({
                 "access_token":"test_token",
-                "token_type":"Bearer"
+                "token_type":"Bearer",
+                "expires_in":3600
             }))
 
 
