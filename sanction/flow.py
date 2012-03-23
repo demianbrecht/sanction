@@ -49,6 +49,21 @@ class ResourceFlow(object):
             obj[name] = attr
 
 
+    def refresh_token(self):
+        assert(self.adapter.credentials.refresh_token is not None)
+
+        o = self.parse_access_token(self.adapter.service.request(
+            self.adapter.token_endpoint, body=urlencode({
+                    "grant_type": "refresh_token",
+                    "refresh_token": self.adapter.credentials.refresh_token
+                }), method="POST", headers={"Content-type":
+                "application/x-www-form-urlencoded"}))
+
+        self.adapter.credentials = credentials_factory(o["token_type"],
+            self.adapter.name, o)
+
+        return self.adapter.credentials
+
 
 class AuthorizationRequestFlow(ResourceFlow):
 

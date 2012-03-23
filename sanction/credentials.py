@@ -28,6 +28,7 @@ class BearerCredentials(BaseCredentials):
         data = self.normalize_token(data)
         self.__access_token = data["access_token"] 
         self.__expires_in = int(data["expires_in"])
+        self.__refresh_token = data["refresh_token"]
 
     @property
     def expires_in(self):
@@ -41,11 +42,21 @@ class BearerCredentials(BaseCredentials):
     def access_token(self, value):
         self.__access_token = value
 
+    @property
+    def refresh_token(self):
+        return self.__refresh_token
+
+    @refresh_token.setter
+    def refresh_token(self, value):
+        self.__refresh_token = value
+
 
     def normalize_token(self, data):
         return {
             "access_token": data["access_token"],
-            "expires_in": data["expires_in"]
+            "expires_in": data["expires_in"],
+            "refresh_token": "refresh_token" in data and data["refresh_token"]\
+                or None
         }
 
     def http_header(self):

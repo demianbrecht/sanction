@@ -38,7 +38,9 @@ class FacebookCredentials(BearerCredentials):
     def normalize_token(self, data):
         return {
             "access_token": data["access_token"],
-            "expires_in": data["expires"]
+            "expires_in": data["expires"],
+            "refresh_token": "refresh_token" in data and data["refresh_token"]\
+                or None
         }
 
 class Facebook(BaseAdapter, AuthorizationEndpointMixIn):

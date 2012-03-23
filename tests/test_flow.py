@@ -47,6 +47,21 @@ class TestResourceFlow(TestCase):
         f.add_optional_attr("test_attr", self.__test_attr, d)
         self.assertEquals(self.__test_attr, d["test_attr"])
 
+    def test_refresh(self):
+        from sanction.credentials import BearerCredentials
+        
+        a = TestAdapterImpl(get_config())
+        start_server()
+        a.flow.authorization_received({
+            "code":"test_code"
+        })
+        start_server()
+        cred = a.flow.refresh_token()
+
+        self.assertTrue(isinstance(cred, BearerCredentials))
+        self.assertEquals(cred.expires_in, 3600)
+        self.assertEquals(cred.refresh_token, "test_refresh_token")
+
 
 class TestAuthorizationRequestFlow(TestCase):
 
@@ -88,8 +103,6 @@ class TestAuthorizationRequestFlow(TestCase):
         start_server()
         cred = a.flow.authorization_received({
             "code": "test_code",
-            "token_type": "Bearer",
-            "expires_in": 3600
         })
         self.assertTrue(isinstance(cred, BearerCredentials))
         self.assertEquals(cred.expires_in, 3600)
