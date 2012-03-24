@@ -5,6 +5,8 @@ from abc import abstractproperty
 from sanction.util import subclasses
 
 class BaseCredentials(object):
+    """ Base class for all credentials
+    """
 
     @abstractproperty
     def context(self): pass #pragma: no cover
