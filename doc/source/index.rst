@@ -14,10 +14,14 @@ Contents:
    api.rst
 
 
-Indices and tables
-==================
+Indices and Glossary 
+====================
 
+* :ref:`glossary`
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
 
+.. toctree::
+   :hidden:
+
+   glossary

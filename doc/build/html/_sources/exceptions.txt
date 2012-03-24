@@ -1,7 +1,0 @@
-:mod:`sanction.exceptions`
-=========================
-
-.. automodule:: sanction.exceptions
-   :members:
-   :inherited-members:
-

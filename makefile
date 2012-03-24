@@ -13,7 +13,7 @@ example:
 	cd example; python server.py
 
 doc:
-	cd doc; make html
+	cd doc; rm -rf build; make html
 
 
 .PHONY: test clean example doc

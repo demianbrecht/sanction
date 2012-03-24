@@ -1,5 +1,5 @@
 :mod:`sanction.config`
-=====================
+======================
 
 .. automodule:: sanction.config
    :members:

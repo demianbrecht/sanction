@@ -24,7 +24,7 @@ class Client(object):
         """ The adapter instance bound to the :class:`Client` instance.
 
         Possibly the most useful thing that you can get from this is the
-        :prop:`sanction.adapters.BaseAdapter.credentials` for the current
+        :py:attr:`~sanction.adapters.BaseAdapter.credentials` for the current
         adapter. This will be available once a user has been authenticated
         by the OAuth2 provider and should be set when your application requests
         resources for a user who's already logged in (in order to avoid 
@@ -33,6 +33,7 @@ class Client(object):
         This accessor can be used to query the adapter directly. See
         :mod:`sanction.adapters` for further details as attributes may vary
         by adapter implementation.
+
         """
         return self.__adapter
 
@@ -46,6 +47,8 @@ class Client(object):
         going on in a given flow, it's important to have a solid understanding
         of the entire `OAuth2 protocol`_. However, this *should* not be
         typically used by the average user as flows are handled automatically. 
+
+        .. _`oauth2 protocol`: http://oauth.net/2/
         """
         return self.__adapter.flow
 

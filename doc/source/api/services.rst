@@ -1,5 +1,5 @@
 :mod:`sanction.services`
-=======================
+========================
 
 .. automodule:: sanction.services
    :members:
