@@ -6,7 +6,6 @@ Must-haves (for v0.9-alpha-1)
 
 Credentials
 ```````````
-- Add ``refresh_token`` support.
 - Enhanced (well, existing) logging.
 
 

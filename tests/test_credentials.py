@@ -24,7 +24,8 @@ class TestCredentialsFactory(TestCase):
         data = {
             "access_token": "test_token",
             "token_type": "Bearer",
-            "expires_in": 3600
+            "expires_in": 3600,
+            "refresh_token": "test_refresh"
         }
         c = credentials_factory("Bearer", "invalid", data)
         self.assertEquals(c.access_token, data["access_token"])
@@ -37,6 +38,10 @@ class TestCredentialsFactory(TestCase):
 
         c.access_token = "foo"
         self.assertEquals(c.access_token, "foo")
+
+        self.assertEquals(c.refresh_token, data["refresh_token"])
+        c.refresh_token = "foo"
+        self.assertEquals(c.refresh_token, "foo")
 
         try:
             c = credentials_factory("foo", "invalid", data)
