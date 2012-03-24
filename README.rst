@@ -1,6 +1,3 @@
-sanction
-========
-
 sanction [sangk-shuhn]: authoritative permission or approval, as for an action. 
 
 .. contents::
