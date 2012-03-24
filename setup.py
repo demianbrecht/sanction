@@ -7,7 +7,8 @@ README = open(os.path.join(here, "README.rst")).read()
 requires = ["coverage",
     "nose",
     "nose-cov",
-    "pyopenssl"]
+    "pyopenssl",
+    "sphinx"]
 
 setup(name="sanction",
     version="0.9-alpha-1",

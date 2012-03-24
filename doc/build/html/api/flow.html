@@ -1,0 +1,211 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>sanction.flow &mdash; sanction 0.1a1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1a1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="sanction 0.1a1 documentation" href="../index.html" />
+    <link rel="up" title="API Reference" href="../api.html" />
+    <link rel="next" title="sanction.services" href="services.html" />
+    <link rel="prev" title="sanction.exceptions" href="exceptions.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="services.html" title="sanction.services"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="exceptions.html" title="sanction.exceptions"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">sanction 0.1a1 documentation</a> &raquo;</li>
+          <li><a href="../api.html" accesskey="U">API Reference</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-sanction.flow">
+<span id="sanction-flow"></span><h1><a class="reference internal" href="#module-sanction.flow" title="sanction.flow"><tt class="xref py py-mod docutils literal"><span class="pre">sanction.flow</span></tt></a><a class="headerlink" href="#module-sanction.flow" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="sanction.flow.AuthorizationEndpointMixIn">
+<em class="property">class </em><tt class="descclassname">sanction.flow.</tt><tt class="descname">AuthorizationEndpointMixIn</tt><a class="headerlink" href="#sanction.flow.AuthorizationEndpointMixIn" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="sanction.flow.AuthorizationEndpointMixIn.authorization_endpoint">
+<tt class="descname">authorization_endpoint</tt><a class="headerlink" href="#sanction.flow.AuthorizationEndpointMixIn.authorization_endpoint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="sanction.flow.AuthorizationRequestFlow">
+<em class="property">class </em><tt class="descclassname">sanction.flow.</tt><tt class="descname">AuthorizationRequestFlow</tt><big>(</big><em>adapter</em><big>)</big><a class="headerlink" href="#sanction.flow.AuthorizationRequestFlow" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="sanction.flow.AuthorizationRequestFlow.authorization_received">
+<tt class="descname">authorization_received</tt><big>(</big><em>data</em>, <em>expected_state=None</em><big>)</big><a class="headerlink" href="#sanction.flow.AuthorizationRequestFlow.authorization_received" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="sanction.flow.AuthorizationRequestFlow.authorization_uri">
+<tt class="descname">authorization_uri</tt><big>(</big><em>state=None</em><big>)</big><a class="headerlink" href="#sanction.flow.AuthorizationRequestFlow.authorization_uri" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="sanction.flow.AuthorizationRequestFlow.client_id">
+<tt class="descname">client_id</tt><a class="headerlink" href="#sanction.flow.AuthorizationRequestFlow.client_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="sanction.flow.AuthorizationRequestFlow.client_secret">
+<tt class="descname">client_secret</tt><a class="headerlink" href="#sanction.flow.AuthorizationRequestFlow.client_secret" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="sanction.flow.AuthorizationRequestFlow.parse_access_token">
+<tt class="descname">parse_access_token</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#sanction.flow.AuthorizationRequestFlow.parse_access_token" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="sanction.flow.AuthorizationRequestFlow.redirect_uri">
+<tt class="descname">redirect_uri</tt><a class="headerlink" href="#sanction.flow.AuthorizationRequestFlow.redirect_uri" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="sanction.flow.AuthorizationRequestFlow.scope">
+<tt class="descname">scope</tt><a class="headerlink" href="#sanction.flow.AuthorizationRequestFlow.scope" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="sanction.flow.ResourceEndpointMixIn">
+<em class="property">class </em><tt class="descclassname">sanction.flow.</tt><tt class="descname">ResourceEndpointMixIn</tt><a class="headerlink" href="#sanction.flow.ResourceEndpointMixIn" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="sanction.flow.ResourceEndpointMixIn.resource_endpoint">
+<tt class="descname">resource_endpoint</tt><a class="headerlink" href="#sanction.flow.ResourceEndpointMixIn.resource_endpoint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="sanction.flow.ResourceEndpointMixIn.token_endpoint">
+<tt class="descname">token_endpoint</tt><a class="headerlink" href="#sanction.flow.ResourceEndpointMixIn.token_endpoint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="sanction.flow.ResourceFlow">
+<em class="property">class </em><tt class="descclassname">sanction.flow.</tt><tt class="descname">ResourceFlow</tt><big>(</big><em>grant_type</em>, <em>adapter</em><big>)</big><a class="headerlink" href="#sanction.flow.ResourceFlow" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="sanction.flow.ResourceFlow.adapter">
+<tt class="descname">adapter</tt><a class="headerlink" href="#sanction.flow.ResourceFlow.adapter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="sanction.flow.ResourceFlow.add_optional_attr">
+<tt class="descname">add_optional_attr</tt><big>(</big><em>name</em>, <em>attr</em>, <em>obj</em><big>)</big><a class="headerlink" href="#sanction.flow.ResourceFlow.add_optional_attr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="sanction.flow.ResourceFlow.grant_type">
+<tt class="descname">grant_type</tt><a class="headerlink" href="#sanction.flow.ResourceFlow.grant_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="sanction.flow.ResourceFlow.refresh_token">
+<tt class="descname">refresh_token</tt><big>(</big><big>)</big><a class="headerlink" href="#sanction.flow.ResourceFlow.refresh_token" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="exceptions.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal"><span class="pre">sanction.exceptions</span></tt></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="services.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">sanction.services</span></tt></a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/flow.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="services.html" title="sanction.services"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="exceptions.html" title="sanction.exceptions"
+             >previous</a> |</li>
+        <li><a href="../index.html">sanction 0.1a1 documentation</a> &raquo;</li>
+          <li><a href="../api.html" >API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Demian Brecht.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2pre/8aba132b1337.
+    </div>
+  </body>
+</html>

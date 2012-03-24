@@ -12,4 +12,8 @@ clean:
 example:
 	cd example; python server.py
 
-.PHONY: test clean example 
+doc:
+	cd doc; make html
+
+
+.PHONY: test clean example doc
