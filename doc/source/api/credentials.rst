@@ -3,4 +3,4 @@
 
 .. automodule:: sanction.credentials
    :members:
-   :inherited-members:
+   :undoc-members:
