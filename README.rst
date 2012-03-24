@@ -1,26 +1,99 @@
+sanction
+========
 
-.. contents:: Table of Contents 
-    :depth: 3
+sanction [sangk-shuhn]: authoritative permission or approval, as for an action. 
 
+.. contents::
+   :depth: 3
 
-:warning: This module is in WIP state and should not be used until this message
-          has been removed.
+Why sanction?
+-------------
+sanction was written to cover issues missed by other implementations:
+
+* Support for multiple providers (protocol deviations). This didn't seem to
+  be supported by **any** library.
+* Actually an OAuth2 implementation (python-oauth2 is a 2nd version of 
+  python-oauth, not an actual OAuth2 implementation)
+* Support for the *entire* OAuth2 spec. Most provide support for the 
+  authorization request flow (employed by all web server providers) with
+  Bearer token credentials, but lacked support or extensibility for any other
+  flows, credentials or other provider extensions)
+* 100% unit test coverage. Some employed TDD, others didn't.
 
 Overview
 --------
-py-sanction a fully tested, 100% protocol-compilant, extensible client 
-implementation of the OAuth2 
-protocol [#]_. The goal of this project that sets it apart from other 
-implementations is that it aims to provide a core implementation that adheres
-to the OAuth2 protocol, while exposing an interface that allows for trivial 
-addition of new adapter implementations that must obey their respective
-provider idiosyncrasies and/or extensions. 
+sanction is an implementation of the OAuth2 protocol that provides the
+following features:
+
+* `Fully protocol-compliant`_
+* `An extensible framework`_
+* `Typed exceptions`_ 
+* `100% unit test coverage`_
+
+Fully protocol-compliant
+````````````````````````
+In the design of this package, the OAuth2 protocol was analyzed and
+used. This differs from other implementations that simply use specific provider
+documentation as a base design. In doing this, making the library cross-
+provider compatable can become difficult.
+
+For example, even though both Facebook and Google provide access to protected
+resources through OAuth2, both implementations differ and require
+specialized handling at almost every level. For details, see the documentation
+for ``sanction.adapters.facebook.Facebook`` and
+``sanction.adapters.google.Google``.
+
+An extensible framework
+```````````````````````
+There are two parts to the extensibility of the OAuth2 framework:
+
+Firstly, care was taken to ensure that if an implementation for a portion of
+the OAuth2 spec was not designed in up front, that adding it in future
+commits would be trivial. For the most part, anywhere that implementations
+can be swapped in and out (i.e. providers, flows, credentials, etc.), an
+adapter pattern was used.
+
+In some cases where data issued by servers dictate types (rather than 
+specifying this at authoring time), factory methods are used to instantiate
+types. An example of this in practice is 
+``sanction.exceptions.exception_factory``, which is responsible for
+instantiating an exception based on server return data.
+
+Secondly, sanction offers support for provider-specific protocol deviations
+and protocol extensions. For example, when access credentials are returned
+to the your application, Facebook returns URL-formatted data rather than
+JSON. Polymorphic behavior can be used in order to support this by a 
+specialized ``sanction.adapters.facebook.Facebook.parse_access_token``
+implementation, which parses the URL-formatted data as only required by
+Facebook.
+
+Other methods are exposed in order to support deviations as required (most can
+be seen by reading through the individual adapter implementations).
+
+Typed exceptions 
+````````````````
+Exceptions that occur when requests are made (authorization, resource requests,
+etc) are typed. This was done to allow for typed exception handling in client
+code::
+
+    try:
+        client.request("/invalid")
+    except AccessDeniedError:
+        log.error("Something bad happened")
+
+100% unit test coverage
+```````````````````````
+If it's not tested, chances are it won't work. Sanction has 100% code coverage.
+Of course, this doesn't mean by any stretch that it's problem-free. It simply
+means that errors (newly introduced or knock-ons) can be caught in an automated
+fashion. TDD is just a Good Thing.
 
 
 Quickstart
 ----------
-For the quickstart, `authorization code grant`_ flow is assumed, as is the
-Bearer_ token type. If you're unfamiliar with these terms, chances are that 
+
+For the quickstart, authorization code grant flow is assumed, as is the
+Bearer token type. If you're unfamiliar with these terms, chances are that 
 they're what you're looking for as it's the default in most public OAuth2
 provider implementations (Google, Facebook, Foursquare, etc.).
 
@@ -80,11 +153,7 @@ then be able to access protected resources through the adapter's API::
 
     client.request("/userinfo")
 
-Out of the box, the adapters do *not* supply an wrapper for each provider's
-API, but if people want to add it, it will definitely be added.
+Adapters implementations do *not* supply an wrapper for each provider's
+API. This isn't the intent of the sanction library.
 
 
-.. _`authorization code grant`: http://tools.ietf.org/html/draft-ietf-oauth-v2-23#section-4.1
-.. _Bearer: http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-08
-
-.. [#] Reference: http://tools.ietf.org/html/draft-ietf-oauth-v2
