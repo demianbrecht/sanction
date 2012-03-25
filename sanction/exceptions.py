@@ -1,3 +1,11 @@
+""" Module defining OAuth 2.0 exceptions
+
+The :py:meth:`~sanction.exceptions.exception_factory` method is responsible
+for instantiating an exception matching the OAuth2 error code. The intention
+of this module is to prevent users from having to know about the internals
+of the OAuth2 protocol (in this context, exceptions).
+"""
+
 from abc import ABCMeta
 from abc import abstractproperty
 from logging import getLogger
@@ -7,6 +15,11 @@ from sanction.util import safe_get
 log = getLogger(__name__)
 
 class BaseError(BaseException):
+    """ Base exception class.
+
+    This base class should be extended by all OAuth2 exceptions generated
+    by the OAuth2 provider.
+    """
     __metaclass__ = ABCMeta
 
     def __init__(self, response):
@@ -90,6 +103,9 @@ class UnsupportedResponseTypeError(BaseError):
     error_name = "unsupported_response_type"
 
 def exception_factory(error_name, data):
+    """ Exceptions factory method.
+
+    """
     for cls in BaseError.__subclasses__():
         if cls.error_name == error_name:
             return cls(data)
