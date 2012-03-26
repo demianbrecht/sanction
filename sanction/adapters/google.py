@@ -30,6 +30,6 @@ class Google(BaseAdapter, AuthorizationEndpointMixIn):
     authorization_endpoint = "https://accounts.google.com/o/oauth2/auth"
     token_endpoint = "https://accounts.google.com/o/oauth2/token"
     resource_endpoint = "https://www.googleapis.com/oauth2/v1"
-    def __init__(self, config):
+    def __init__(self, config, flow = None):
             BaseAdapter.__init__(self, config, GoogleAuthorizationRequestFlow)
 

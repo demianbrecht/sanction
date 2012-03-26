@@ -77,7 +77,7 @@ class Facebook(BaseAdapter, AuthorizationEndpointMixIn):
     token_endpoint = "https://graph.facebook.com/oauth/access_token"
     resource_endpoint = "https://graph.facebook.com"
 
-    def __init__(self, config):
+    def __init__(self, config, flow = None):
         BaseAdapter.__init__(self, config, FacebookAuthorizationRequestFlow)
 
     def request(self, path, method="GET", body=None): #pragma: no cover 
