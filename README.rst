@@ -27,6 +27,13 @@ following features:
 * `Typed exceptions`_ 
 * `100% unit test coverage`_
 
+Implementations for the following providers are currently completed and more 
+will be added as they are completed:
+
+* Facebook
+* Google
+* Foursquare
+
 Fully protocol-compliant
 ````````````````````````
 In the design of this package, the OAuth2 protocol was analyzed and

@@ -11,9 +11,9 @@ Credentials
 
 Adapters
 ````````
-- Foursquare
-- Wordpress
-
+- Gowalla
+- Mailchimp
+- Yammer
 
 Documentation
 `````````````
@@ -27,12 +27,6 @@ Documentation
 
 Nice-to-haves
 -------------
-
-Adapters
-````````
-- Gowalla
-- Mailchimp
-- Yammer
 
 Documentation
 `````````````
