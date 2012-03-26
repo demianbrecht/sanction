@@ -28,7 +28,7 @@ following features:
 * `100% unit test coverage`_
 
 Implementations for the following providers are currently completed and more 
-will be added as they are completed:
+will be added over time (feel free to contribute patches):
 
 * Facebook
 * Google
