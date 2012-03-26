@@ -56,7 +56,7 @@ class BearerCredentials(BaseCredentials):
     def normalize_token(self, data):
         return {
             "access_token": data["access_token"],
-            "expires_in": data["expires_in"],
+            "expires_in": "expires_in" in data and data["expires_in"] or -1,
             "refresh_token": "refresh_token" in data and data["refresh_token"]\
                 or None
         }

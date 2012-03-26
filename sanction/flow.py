@@ -118,7 +118,8 @@ class AuthorizationRequestFlow(ResourceFlow):
             "client_id": self.__client_id 
         }
         self.add_optional_attr("redirect_uri", self.redirect_uri, data)
-        self.add_optional_attr("scope", " ".join(self.scope.split(",")), data)
+        self.add_optional_attr("scope", self.scope is not None and " ".join(
+            self.scope.split(",")) or None, data)
         self.add_optional_attr("state", state, data)
 
         return "%s?%s" % (self.adapter.authorization_endpoint, urlencode(data))

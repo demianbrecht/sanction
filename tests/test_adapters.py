@@ -103,3 +103,30 @@ class TestFacebook(TestCase):
         })
         self.assertEquals(c.expires_in, 3600)
 
+
+class TestFoursquare(TestCase):
+    def test_flow(self):
+        from sanction.adapters.foursquare import Foursquare
+        from sanction.adapters.foursquare import \
+            FoursquareAuthorizationRequestFlow
+
+        f = FoursquareAuthorizationRequestFlow(Foursquare(get_config()))
+        data = f.parse_access_token('''{
+            "foo":"bar",
+            "syn":"ack"
+        }''')
+
+        self.assertEquals(data["foo"], "bar")
+        self.assertEquals(data["syn"], "ack")
+
+    def test_cred(self):
+        from urlparse import parse_qsl
+        from sanction.adapters.foursquare import FoursquareCredentials
+
+        c = FoursquareCredentials({
+           "access_token": "foo"
+        })
+
+        self.assertIsNotNone(dict(parse_qsl(c.query_param()))["oauth_token"])
+       
+

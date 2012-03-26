@@ -11,6 +11,7 @@ from urlparse import parse_qsl
 from sanction.client import Client
 from sanction.adapters.google import Google
 from sanction.adapters.facebook import Facebook
+from sanction.adapters.foursquare import Foursquare
 
 logging.basicConfig(format="%(message)s")
 l = logging.getLogger(__name__)
@@ -35,7 +36,9 @@ class Handler(BaseHTTPRequestHandler):
         "/login/google": "handle_google_login",
         "/oauth2/google": "handle_google",
         "/login/facebook": "handle_facebook_login",
-        "/oauth2/facebook": "handle_facebook"
+        "/oauth2/facebook": "handle_facebook",
+        "/login/foursquare": "handle_foursquare_login",
+        "/oauth2/foursquare": "handle_foursquare"
     }
 
     def do_GET(self):
@@ -53,7 +56,8 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write('''
             login with: <a href="/oauth2/google">Google</a>,
-            <a href="/oauth2/facebook">Facebook</a>
+            <a href="/oauth2/facebook">Facebook</a>,
+            <a href="/oauth2/foursquare">Foursquare</a>
         ''')
 
 
@@ -65,6 +69,12 @@ class Handler(BaseHTTPRequestHandler):
 
     def handle_facebook(self, data):
         c = Client(Facebook, get_config())
+        self.send_response(302)
+        self.send_header("Location", c.flow.authorization_uri())
+        self.end_headers()
+
+    def handle_foursquare(self, data):
+        c = Client(Foursquare, get_config())
         self.send_response(302)
         self.send_header("Location", c.flow.authorization_uri())
         self.end_headers()
@@ -103,6 +113,23 @@ class Handler(BaseHTTPRequestHandler):
 
         self.wfile.write(d)
 
+
+    def handle_foursquare_login(self, data):
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.log_message(self.path)
+        self.end_headers()
+
+        c = Client(Foursquare, get_config())
+        cred = c.flow.authorization_received(data)
+
+        d = c.request("/users/24700343")
+
+        self.wfile.write("Access token: %s<br>" % cred.access_token)
+        self.wfile.write("Type: %s<br>" % cred.token_type)
+        self.wfile.write("Expires in: %d<br>" % cred.expires_in)
+
+        self.wfile.write(d)
 
 def main(): 
     l.setLevel(1)
