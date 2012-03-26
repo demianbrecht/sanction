@@ -12,6 +12,12 @@ from sanction.util import safe_get
 log = getLogger(__name__)
 
 class ResourceEndpointMixIn(object):
+    """ Mix-in for resource endpoints.
+    
+    Mix-in that must be used by adapter implementations that expose methods
+    of requesting resources. All OAuth2 adapters *should* provide this, thus
+    all concrete classes should extend this.
+    """
     __metaclass__ = ABCMeta
 
     @abstractproperty
@@ -22,6 +28,12 @@ class ResourceEndpointMixIn(object):
 
 
 class AuthorizationEndpointMixIn(ResourceEndpointMixIn):
+    """ Mix-in for authorization endpoint.
+
+    This mix-in should be used when implementing an adapter that supports
+    the authorization request flow (most web server-based flow providers
+    use this).
+    """
     __metaclass__ = ABCMeta
 
     @abstractproperty
@@ -29,6 +41,9 @@ class AuthorizationEndpointMixIn(ResourceEndpointMixIn):
 
 
 class ResourceFlow(object):
+    """ Flow base class.
+
+    """
 
     def __init__(self, grant_type, adapter):
         self.__grant_type = grant_type
