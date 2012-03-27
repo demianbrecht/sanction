@@ -145,3 +145,17 @@ class TestDeviantArt(TestCase):
         self.assertEquals(data["foo"], "bar")
         self.assertEquals(data["syn"], "ack")
 
+
+class TestStackExchange(TestCase):
+    def test_flow(self):
+        from sanction.adapters.stackexchange import StackExchange
+        from sanction.adapters.stackexchange import \
+            StackExchangeAuthorizationRequestFlow
+
+        f = StackExchangeAuthorizationRequestFlow(StackExchange(get_config()))
+        data = f.parse_access_token("foo=bar&syn=ack")
+
+        print data
+        self.assertEquals(data["foo"], "bar")
+        self.assertEquals(data["syn"], "ack")
+

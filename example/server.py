@@ -6,13 +6,17 @@ from BaseHTTPServer import HTTPServer
 from BaseHTTPServer import BaseHTTPRequestHandler
 from ConfigParser import ConfigParser
 from urlparse import urlparse
+from urllib import urlencode
 from urlparse import parse_qsl
+from StringIO import StringIO
+from gzip import GzipFile
 
 from sanction.client import Client
 from sanction.adapters.google import Google
 from sanction.adapters.facebook import Facebook
 from sanction.adapters.foursquare import Foursquare
 from sanction.adapters.deviantart import DeviantArt 
+from sanction.adapters.stackexchange import StackExchange
 
 logging.basicConfig(format="%(message)s")
 l = logging.getLogger(__name__)
@@ -41,7 +45,9 @@ class Handler(BaseHTTPRequestHandler):
         "/login/foursquare": "handle_foursquare_login",
         "/oauth2/foursquare": "handle_foursquare",
         "/login/deviantart": "handle_deviantart_login",
-        "/oauth2/deviantart": "handle_deviantart"
+        "/oauth2/deviantart": "handle_deviantart",
+        "/login/stackexchange": "handle_stackexchange_login",
+        "/oauth2/stackexchange": "handle_stackexchange"
     }
 
     def do_GET(self):
@@ -61,7 +67,8 @@ class Handler(BaseHTTPRequestHandler):
             login with: <a href="/oauth2/google">Google</a>,
             <a href="/oauth2/facebook">Facebook</a>,
             <a href="/oauth2/foursquare">Foursquare</a>,
-            <a href="/oauth2/deviantart">Deviant Art</a>
+            <a href="/oauth2/deviantart">Deviant Art</a>,
+            <a href="/oauth2/stackexchange">Stack Exchange</a>
         ''')
 
 
@@ -89,6 +96,12 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Location", c.flow.authorization_uri())
         self.end_headers()
 
+    def handle_stackexchange(self, data):
+        c = Client(StackExchange, get_config())
+        self.send_response(302)
+        self.send_header("Location", c.flow.authorization_uri())
+        self.end_headers()
+
     def handle_facebook_login(self, data):
         self.send_response(200)
         self.send_header("Content-type", "text/html")
@@ -105,6 +118,13 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write("Expires in: %d<br>" % cred.expires_in)
 
         self.wfile.write(d)
+
+        # to see a wall post in action, uncomment this
+        """
+        c.request("/feed", method="POST", body=urlencode({
+            "message": "test post from py-sanction"
+        }))
+        """
 
     def handle_google_login(self, data):
         self.send_response(200)
@@ -157,6 +177,34 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write("Expires in: %d<br>" % cred.expires_in)
 
         self.wfile.write(d)
+
+
+    def handle_stackexchange_login(self, data):
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.log_message(self.path)
+        self.end_headers()
+
+        c = Client(StackExchange, get_config())
+        cred = c.flow.authorization_received(data)
+
+        d = c.request("/me", body={
+            "site": "stackoverflow"
+        })
+
+        self.wfile.write("<!DOCTYPE html>")
+        self.wfile.write("<head><meta charset=\"utf-8\"/></head><body>")
+        self.wfile.write("Access token: %s<br>" % cred.access_token)
+        self.wfile.write("Type: %s<br>" % cred.token_type)
+        self.wfile.write("Expires in: %d<br>" % cred.expires_in)
+
+        # stackexchange gzips all data
+        h = StringIO(d)
+        gzip_data = GzipFile(fileobj=h)
+        d = gzip_data.read()
+        gzip_data.close()
+        self.wfile.write(d)
+        self.wfile.write("</body></html>")
 
 
 def main(): 
