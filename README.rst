@@ -33,6 +33,8 @@ will be added over time (feel free to contribute patches):
 * Facebook
 * Google
 * Foursquare
+* Deviant Art
+* Stack Exchange
 
 Fully protocol-compliant
 ````````````````````````
