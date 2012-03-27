@@ -188,9 +188,9 @@ class Handler(BaseHTTPRequestHandler):
         c = Client(StackExchange, get_config())
         cred = c.flow.authorization_received(data)
 
-        d = c.request("/me", body={
+        d = c.request("/me", body=urlencode({
             "site": "stackoverflow"
-        })
+        }))
 
         self.wfile.write("<!DOCTYPE html>")
         self.wfile.write("<head><meta charset=\"utf-8\"/></head><body>")

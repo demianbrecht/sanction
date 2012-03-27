@@ -35,7 +35,6 @@ class StackExchange(BaseAdapter, AuthorizationEndpointMixIn):
         """
         assert(isinstance(self.credentials, BaseCredentials))
         uri = "%s%s?%s&%s&key=%s" % (self.resource_endpoint, path,
-            self.credentials.query_param(), urlencode(body),
+            self.credentials.query_param(), body,
             quote_plus(self.config["key"]))
         return self.service.request(uri, method) 
-
