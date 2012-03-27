@@ -4,6 +4,8 @@ test:
 	nosetests -x --with-cov --cov sanction --cov-config\
 		.coveragerc --pdb-failures --pdb --cov-report term-missing\
 		./tests
+
+	make clean
 	
 clean:
 	find . -name "*.pyc" | xargs rm

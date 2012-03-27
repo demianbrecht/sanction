@@ -130,3 +130,18 @@ class TestFoursquare(TestCase):
         self.assertIsNotNone(dict(parse_qsl(c.query_param()))["oauth_token"])
        
 
+class TestDeviantArt(TestCase):
+    def test_flow(self):
+        from sanction.adapters.deviantart import DeviantArt 
+        from sanction.adapters.deviantart import \
+            DeviantArtAuthorizationRequestFlow
+
+        f = DeviantArtAuthorizationRequestFlow(DeviantArt(get_config()))
+        data = f.parse_access_token('''{
+            "foo":"bar",
+            "syn":"ack"
+        }''')
+
+        self.assertEquals(data["foo"], "bar")
+        self.assertEquals(data["syn"], "ack")
+

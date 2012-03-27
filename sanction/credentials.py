@@ -1,6 +1,7 @@
 from abc import ABCMeta
 from abc import abstractmethod
 from abc import abstractproperty
+from urllib import quote_plus 
 
 from sanction.util import subclasses
 
@@ -67,7 +68,7 @@ class BearerCredentials(BaseCredentials):
         }
 
     def query_param(self):
-        return "access_token=%s" % self.__access_token
+        return "access_token=%s" % quote_plus(self.__access_token)
 
 
 def credentials_factory(token_type, context, data):
