@@ -4,16 +4,8 @@ py-sanction TODOs
 Must-haves (for v0.9-alpha-1)
 -----------------------------
 
-Credentials
-```````````
 - Enhanced (well, existing) logging.
 
-
-Adapters
-````````
-- Gowalla
-- Mailchimp
-- Yammer
 
 Documentation
 `````````````
