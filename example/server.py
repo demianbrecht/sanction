@@ -12,7 +12,7 @@ from StringIO import StringIO
 from gzip import GzipFile
 from urllib import quote_plus
 
-from sanction import Client
+from sanction.client import Client
 
 def get_config():
 	config = ConfigParser({}, dict)
@@ -65,10 +65,11 @@ class Handler(BaseHTTPRequestHandler):
 
 	def handle_google(self, data):
 		self.send_response(302)
-		c = Client(auth_endpoint="https://accounts.google.com/o/oauth2/auth")
-		self.send_header("Location", c.get_auth_uri(config["google.client_id"],
-			scope=config["google.scope"].split(","),
-			redirect_uri="http://localhost:8080/login/google"))
+		c = Client(auth_endpoint="https://accounts.google.com/o/oauth2/auth",
+			client_id=config["google.client_id"],
+			redirect_uri="http://localhost:8080/login/google")
+		self.send_header("Location", c.get_auth_uri(
+			scope=config["google.scope"].split(",")))	
 		self.end_headers()
 
 
@@ -80,9 +81,10 @@ class Handler(BaseHTTPRequestHandler):
 
 		c = Client(token_endpoint="https://accounts.google.com/o/oauth2/token",
 			resource_endpoint="https://www.googleapis.com/oauth2/v1",
-			redirect_uri="http://localhost:8080/login/google")
-		c.auth_received(data, config["google.client_id"],
-			config["google.client_secret"])
+			redirect_uri="http://localhost:8080/login/google",
+			client_id=config["google.client_id"],
+			client_secret=config["google.client_secret"])
+		c.auth_received(data)
 
 		self.wfile.write("Access token: %s<br>" % c.access_token)
 
