@@ -97,11 +97,11 @@ class Handler(BaseHTTPRequestHandler):
 	def handle_facebook(self, data):
 		self.send_response(302)
 		c = Client(auth_endpoint="https://www.facebook.com/dialog/oauth",
+				client_id=config["facebook.client_id"],
 				redirect_uri="http://localhost:8080/login/facebook")
 		self.send_header("Location", c.get_auth_uri(
-			config["facebook.client_id"],
 			scope=config["facebook.scope"].split(","),
-			scope_delim=",",))
+			scope_delim=","))
 		self.end_headers()
 
 
@@ -114,9 +114,10 @@ class Handler(BaseHTTPRequestHandler):
 		c = Client(
 			token_endpoint="https://graph.facebook.com/oauth/access_token",
 			resource_endpoint="https://graph.facebook.com",
-			redirect_uri="http://localhost:8080/login/facebook")
-		c.auth_received(data, config["facebook.client_id"],
-			config["facebook.client_secret"])
+			redirect_uri="http://localhost:8080/login/facebook",
+			client_id=config["facebook.client_id"],
+			client_secret=config["facebook.client_secret"])
+		c.auth_received(data)
 
 		d = c.request("/me")
 
@@ -126,24 +127,22 @@ class Handler(BaseHTTPRequestHandler):
 		self.wfile.write("Email: %s<br>" % d["email"])
 
 		# to see a wall post in action, uncomment this
-		"""
 		try:
 			d = c.request("/me/feed", data=urlencode({
 				"message": "test post from py-sanction"
 			}))
 			self.wfile.write(
-				"I posted a message to your wall (in sandbox mode)")
+				"I posted a message to your wall (in sandbox mode, nobody else will see it)")
 		except:
 			self.wfile.write(
 				"Unable to post to your wall")
-		"""
 
 	def handle_foursquare(self, data):
 		self.send_response(302)
 		c = Client(auth_endpoint="https://foursquare.com/oauth2/authenticate",
-			redirect_uri="http://localhost:8080/login/foursquare")
-		self.send_header("Location", c.get_auth_uri(
-			config["foursquare.client_id"]))
+				client_id=config["foursquare.client_id"],
+				redirect_uri="http://localhost:8080/login/foursquare")
+		self.send_header("Location", c.get_auth_uri())
 		self.end_headers()
 
 
@@ -157,9 +156,10 @@ class Handler(BaseHTTPRequestHandler):
 			token_endpoint="https://foursquare.com/oauth2/access_token",
 			resource_endpoint="https://api.foursquare.com/v2",
 			redirect_uri="http://localhost:8080/login/foursquare",
+			client_id=config["foursquare.client_id"],
+			client_secret=config["foursquare.client_secret"],
 			access_token_key="oauth_token")
-		c.auth_received(data, config["foursquare.client_id"],
-			config["foursquare.client_secret"])
+		c.auth_received(data)
 
 		d = c.request("/users/24700343")
 
