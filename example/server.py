@@ -68,7 +68,7 @@ class Handler(BaseHTTPRequestHandler):
 		c = Client(auth_endpoint="https://accounts.google.com/o/oauth2/auth",
 			client_id=config["google.client_id"],
 			redirect_uri="http://localhost:8080/login/google")
-		self.send_header("Location", c.get_auth_uri(
+		self.send_header("Location", c.auth_uri(
 			scope=config["google.scope"].split(",")))	
 		self.end_headers()
 
@@ -99,7 +99,7 @@ class Handler(BaseHTTPRequestHandler):
 		c = Client(auth_endpoint="https://www.facebook.com/dialog/oauth",
 				client_id=config["facebook.client_id"],
 				redirect_uri="http://localhost:8080/login/facebook")
-		self.send_header("Location", c.get_auth_uri(
+		self.send_header("Location", c.auth_uri(
 			scope=config["facebook.scope"].split(","),
 			scope_delim=","))
 		self.end_headers()
@@ -117,7 +117,8 @@ class Handler(BaseHTTPRequestHandler):
 			redirect_uri="http://localhost:8080/login/facebook",
 			client_id=config["facebook.client_id"],
 			client_secret=config["facebook.client_secret"])
-		c.auth_received(data)
+		c.auth_received(data, 
+			parser = lambda data: dict(parse_qsl(data)))
 
 		d = c.request("/me")
 
@@ -142,7 +143,7 @@ class Handler(BaseHTTPRequestHandler):
 		c = Client(auth_endpoint="https://foursquare.com/oauth2/authenticate",
 				client_id=config["foursquare.client_id"],
 				redirect_uri="http://localhost:8080/login/foursquare")
-		self.send_header("Location", c.get_auth_uri())
+		self.send_header("Location", c.auth_uri())
 		self.end_headers()
 
 
@@ -158,7 +159,8 @@ class Handler(BaseHTTPRequestHandler):
 			redirect_uri="http://localhost:8080/login/foursquare",
 			client_id=config["foursquare.client_id"],
 			client_secret=config["foursquare.client_secret"],
-			access_token_key="oauth_token")
+			)
+		c.access_token_key = "oauth_token"
 		c.auth_received(data)
 
 		d = c.request("/users/24700343")

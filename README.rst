@@ -80,7 +80,7 @@ The next step is to redirect the user agent to the provider's authentication/
 authorization uri (continuation from previous code block)::
 
     scope_req = ("scope1","scope2",)
-    my_redirect(c.get_auth_uri(scope_req))
+    my_redirect(c.auth_uri(scope_req))
 
 You can also elect to use the optional ``state`` parameter to pass a CSRF token
 that will be included if the provider's response::
