@@ -112,6 +112,3 @@ There are no implementations for individual OAuth2-exposed resources. This is no
 the intention of the library and will not be added.
 
 
-TODO's
-``````
-* Graceful error handling.
