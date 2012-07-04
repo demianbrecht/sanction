@@ -40,11 +40,22 @@ class Client(object):
 		if o.has_key("error"):
 			raise IOError(o["error"])
 		else:
-			self.get_access_token(o["code"], self.client_id,
+			self.__get_access_token(o["code"], self.client_id,
 				self.client_secret)
 
 
-	def get_access_token(self, code, client_id, client_secret, 
+	def request(self, path, qs=None, data=None):
+		assert(self.access_token is not None)
+		if qs is None: qs = {}
+		qs.update({
+			self.access_token_key: self.access_token
+		})
+		path = "%s%s?%s" % (self.resource_endpoint, path, urlencode(qs))
+		h = urlopen(path, data)
+		return loads(h.read())
+
+
+	def __get_access_token(self, code, client_id, client_secret, 
 		grant_type=None): 
 		o = {
 			"code": code,
@@ -67,17 +78,7 @@ class Client(object):
 		self.token_type = r.get("token_type", None)
 
 
-	def request(self, path, qs=None, data=None):
-		assert(self.access_token is not None)
-		if qs is None: qs = {}
-		qs.update({
-			self.access_token_key: self.access_token
-		})
-		path = "%s%s?%s" % (self.resource_endpoint, path, urlencode(qs))
-		h = urlopen(path, data)
-		return loads(h.read())
-
-
+	
 def _parse_rval(data):
 	if isinstance(data, basestring):
 		try:
