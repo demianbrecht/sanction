@@ -51,7 +51,7 @@ class SanctionTests(TestCase):
 
 		c = Client()
 		try:
-			c.auth_received('{ "error": "something bad happened" }')
+			c.auth_received({ "error": "something bad happened" })
 			self.fail("shouldn't hit here")
 		except IOError:
 			pass
