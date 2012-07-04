@@ -11,7 +11,7 @@ setup(name="sanction",
     description="",
     author="Demian Brecht",
     author_email="demianbrecht@gmail.com",
-    url="",
+	url="https://github.com/demianbrecht/py-sanction",
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Environment :: Web Environment",
