@@ -45,6 +45,8 @@ Introducing this library should be rather trivial (in the usual basic case).
 There are three steps required in the most common use case (Google is assumed
 to be the provider throughout sample code):
 
+You can also take a look at the example code in ``/example``.
+
 Instantiation
 `````````````
 
