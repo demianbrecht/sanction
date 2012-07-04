@@ -4,10 +4,7 @@ from setuptools import setup
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, "README.rst")).read()
 
-requires = ["coverage",
-    "nose",
-    "nose-cov",
-    "sphinx"]
+requires = []
 
 setup(name="sanction",
     version="0.1-alpha-1",

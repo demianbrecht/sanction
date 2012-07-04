@@ -1,0 +1,1 @@
+-e git+git@github.com:demianbrecht/py-sanction.git@f40f887d3ba9650069f6e6dd71d949bfbf5a1826#egg=sanction-dev
