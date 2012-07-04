@@ -25,5 +25,6 @@ setup(name="sanction",
         "Topic :: System :: Systems Administration :: Authentication/Directory"
     ],
     long_description=README,
-    install_requires=requires
+    install_requires=requires,
+	packages=["sanction",]
 )

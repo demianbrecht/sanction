@@ -5,4 +5,4 @@ tags
 *.egg-info
 *.pyc
 *.swp
-dist
+/dist
