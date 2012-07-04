@@ -3,96 +3,34 @@ sanction [sangk-shuhn]: authoritative permission or approval, as for an action.
 .. contents::
    :depth: 3
 
-Why sanction?
--------------
-sanction was written to cover issues missed by other implementations:
 
-* Support for multiple providers (protocol deviations). This didn't seem to
-  be supported by **any** library.
-* Actually an OAuth2 implementation (python-oauth2 is a 2nd version of 
-  python-oauth, not an actual OAuth2 implementation)
-* Support for the *entire* OAuth2 spec. Most provide support for the 
-  authorization request flow (employed by all web server providers) with
-  Bearer token credentials, but lacked support or extensibility for any other
-  flows, credentials or other provider extensions)
-* 100% unit test coverage. Some employed TDD, others didn't.
+:note: sanction has undergone a major overhaul!
+
+       After spending some time with Python in a professional capacity, I decided
+       that what I had originally written was quite horribly over-engineered and 
+       would take *far* too much effort in maintenance.
+
+       So, the current implementation assumes that you have at least a *basic* 
+       understanding of the OAuth2 protocol.
+
 
 Overview
 --------
 sanction is an implementation of the OAuth2 protocol that provides the
 following features:
 
-* `Fully protocol-compliant`_
-* `An extensible framework`_
-* `Typed exceptions`_ 
-* `100% unit test coverage`_
+* Support for multiple providers
+* Simple implementation
+    * The simpler the implementation, the easier to understand. At time of writing,
+      the entire library is comprised of 71 LOC. This shouldn't be difficult to
+      grok, even for the absolute newbie.
 
-Implementations for the following providers are currently completed and more 
-will be added over time (feel free to contribute patches):
+
+sanction has been tested with the following OAuth2 providers:
 
 * Facebook
 * Google
 * Foursquare
-* Deviant Art
-* Stack Exchange
-
-Fully protocol-compliant
-````````````````````````
-In the design of this package, the OAuth2 protocol was analyzed and
-used. This differs from other implementations that simply use specific provider
-documentation as a base design. In doing this, making the library cross-
-provider compatable can become difficult.
-
-For example, even though both Facebook and Google provide access to protected
-resources through OAuth2, both implementations differ and require
-specialized handling at almost every level. For details, see the documentation
-for ``sanction.adapters.facebook.Facebook`` and
-``sanction.adapters.google.Google``.
-
-An extensible framework
-```````````````````````
-There are two parts to the extensibility of the OAuth2 framework:
-
-Firstly, care was taken to ensure that if an implementation for a portion of
-the OAuth2 spec was not designed in up front, that adding it in future
-commits would be trivial. For the most part, anywhere that implementations
-can be swapped in and out (i.e. providers, flows, credentials, etc.), an
-adapter pattern was used.
-
-In some cases where data issued by servers dictate types (rather than 
-specifying this at authoring time), factory methods are used to instantiate
-types. An example of this in practice is 
-``sanction.exceptions.exception_factory``, which is responsible for
-instantiating an exception based on server return data.
-
-Secondly, sanction offers support for provider-specific protocol deviations
-and protocol extensions. For example, when access credentials are returned
-to the your application, Facebook returns URL-formatted data rather than
-JSON. Polymorphic behavior can be used in order to support this by a 
-specialized ``sanction.adapters.facebook.Facebook.parse_access_token``
-implementation, which parses the URL-formatted data as only required by
-Facebook.
-
-Other methods are exposed in order to support deviations as required (most can
-be seen by reading through the individual adapter implementations).
-
-Typed exceptions 
-````````````````
-Exceptions that occur when requests are made (authorization, resource requests,
-etc) are typed. This was done to allow for typed exception handling in client
-code::
-
-    try:
-        client.request("/invalid")
-    except AccessDeniedError:
-        log.error("Something bad happened")
-
-100% unit test coverage
-```````````````````````
-If it's not tested, chances are it won't work. Sanction has 100% code coverage.
-Of course, this doesn't mean by any stretch that it's problem-free. It simply
-means that errors (newly introduced or knock-ons) can be caught in an automated
-fashion. TDD is just a Good Thing.
 
 
 Quickstart
@@ -111,19 +49,22 @@ Instantiation
 `````````````
 
 To access protected resources via the OAuth2 protocol, you must instantiate a 
-``Client`` and pass it an adapter implementation to use, as well as a ``dict``
-containing configuration information::
+``Client`` and pass it relevant endpoints for your current operation::
 
     from sanction.client import Client
-    from sanction.adapters.google import Google
 
-    client = Client(Google, {
-        "google.client_id": "myclientid",
-        "google.client_secret": "myclientsecret",
-        "google.redirect_uri": "myredirecturi",
-        "google.scope": "myscope",
-        "google.access_type": "online" # google-specific
-    })
+    # instantiating a client to get the auth URI
+    c = Client(auth_endpoint="https://accounts.google.com/o/oauth2/auth",
+        client_id=config["google.client_id"],
+        redirect_uri="http://localhost:8080/login/google")
+    
+    # instantiating a client to process OAuth2 response
+    c = Client(token_endpoint="https://accounts.google.com/o/oauth2/token",
+        resource_endpoint="https://www.googleapis.com/oauth2/v1",
+        redirect_uri="http://localhost:8080/login/google",
+        client_id=config["google.client_id"],
+        client_secret=config["google.client_secret"])
+
 
 Of course, you may create the config ``dict`` in your preferred method, the
 above is simply for demonstration using the required config settings (the
@@ -134,7 +75,8 @@ Authorization Request
 The next step is to redirect the user agent to the provider's authentication/
 authorization uri (continuation from previous code block)::
 
-    my_redirect(client.flow.authorization_uri())
+    scope_req = ("scope1","scope2",)
+    my_redirect(c.get_auth_uri(scope_req))
 
 You can also elect to use the optional ``state`` parameter to pass a CSRF token
 that will be included if the provider's response::
@@ -142,24 +84,29 @@ that will be included if the provider's response::
     my_redirect(client.flow.authorization_uri(state=my_state))
 
 :note: It is **strongly** encouraged that you use the ``state`` parameter to 
-       offer CSRF protection.
+       offer CSRF protection. It is also up to you to process the ``state``
+       parameter and handle redirection accordingly *before* calling 
+       ``auth_received``.
 
 
 Access Token Request
 ````````````````````
 When the user has granted or denied resource access to your application, they
-will be redirected to the ``redirect_uri`` as specified in your config 
-settings. In order to request an access token from the provider, you must
+will be redirected to the ``redirect_uri`` as specified by the value of the ``GET``
+param. In order to request an access token from the provider, you must
 tell the ``Client`` that authorization has been received::
 
-    client.flow.authorization_received(server_response_dict)
+    c.auth_recieved(response_dict)
 
 If the user has granted access and your config settings are correct, you should
 then be able to access protected resources through the adapter's API::
 
-    client.request("/userinfo")
+    c.request("/userinfo")
 
-Adapters implementations do *not* supply an wrapper for each provider's
-API. This isn't the intent of the sanction library.
+There are no implementations for individual OAuth2-exposed resources. This is not
+the intention of the library and will not be added.
 
 
+TODO's
+``````
+* Graceful error handling.

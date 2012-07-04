@@ -10,7 +10,7 @@ requires = ["coverage",
     "sphinx"]
 
 setup(name="sanction",
-    version="0.9-alpha-1",
+    version="0.1-alpha-1",
     description="",
     author="Demian Brecht",
     author_email="demianbrecht@gmail.com",
