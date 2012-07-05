@@ -14,7 +14,7 @@ setup(name="sanction",
     author_email="demianbrecht@gmail.com",
 	url="https://github.com/demianbrecht/sanction",
     classifiers=[
-        "Development Status :: 5 - Production",
+		"Development Status :: 5 - Production/Stable",
         "Environment :: Web Environment",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
