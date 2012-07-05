@@ -43,6 +43,8 @@ class Handler(BaseHTTPRequestHandler):
 		"/oauth2/foursquare": "handle_foursquare",
 		"/login/bitly": "handle_bitly_login",
 		"/oauth2/bitly": "handle_bitly",
+		"/login/github": "handle_github_login",
+		"/oauth2/github": "handle_github",
 	}
 
 	def do_GET(self):
@@ -61,8 +63,9 @@ class Handler(BaseHTTPRequestHandler):
 		self.wfile.write('''
 			login with: <a href="/oauth2/google">Google</a>,
 			<a href="/oauth2/facebook">Facebook</a>,
+			<a href="/oauth2/github">GitHub</a>,
 			<a href="/oauth2/foursquare">Foursquare</a>,
-			<a href="/oauth2/bitly">Bitly</a>
+			<a href="/oauth2/bitly">Bitly</a>,
 		''')
 
 
@@ -205,6 +208,38 @@ class Handler(BaseHTTPRequestHandler):
 		data = c.request("/v3/user/info")["data"]
 		self.wfile.write("Full name: %s<br>" % data["full_name"])
 		self.wfile.write("Member since: %s<br>" % data["member_since"])
+
+
+	def handle_github(self, data):
+		self.send_response(302)
+		c = Client(auth_endpoint="https://github.com/login/oauth/authorize",
+				client_id=config["github.client_id"],
+				redirect_uri="http://localhost:8080/login/github")
+		self.send_header("Location", c.auth_uri())
+		self.end_headers()
+
+
+	def handle_github_login(self, data):
+		self.send_response(200)
+		self.send_header("Content-type", "text/html")
+		self.log_message(self.path)
+		self.end_headers()
+
+		c = Client(token_endpoint="https://github.com/login/oauth/access_token",
+			resource_endpoint="https://api.github.com",
+			redirect_uri="http://localhost:8080/login/github",
+			client_id=config["github.client_id"],
+			client_secret=config["github.client_secret"])
+		c.request_token(data=data,
+			parser = lambda data: dict(parse_qsl(data)))
+
+		self.wfile.write("Access token: %s<br>" % c.access_token)
+
+		data = c.request("/user")
+		self.wfile.write("Full name: %s<br>" % data["name"])
+		self.wfile.write("Location: %s<br>" % data["location"])
+		self.wfile.write("Hireable: %s<br>" % data["hireable"])
+
 
 
 def main(): 
