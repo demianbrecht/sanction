@@ -9,15 +9,18 @@ sanction [sangk-shuhn]: authoritative permission or approval, as for an action.
 
 Overview
 --------
-sanction is an implementation of the OAuth2 protocol that provides the
-following features:
+sanction is a lightweight, dead simple client implementation of the 
+OAuth2 protocol. The major goals of the library are:
 
-* Support for multiple providers
-* Simple implementation
-    * The simpler the implementation, the easier to understand. At time of writing,
-      the entire library is comprised of 71 LOC. This shouldn't be difficult to
-      grok, even for the absolute newbie.
-
+* Support multiple providers
+ * Most providers have varying levels of diversion from the official
+   spec. The goal with this library is to either handle these diversions
+   natively, or expose a method to allow client code to deal with it 
+   efficiently and effectively.
+* Support all server-side OAuth2 flows
+ * Three of the four OAuth2 flows should be supported by this library.
+   Currently, only authorization code and client credential flows have
+   been tested due to lack of other (known) implementations.
 
 sanction has been tested with the following OAuth2 providers:
 
