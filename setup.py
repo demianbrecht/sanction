@@ -8,13 +8,13 @@ requires = []
 
 setup(name="sanction",
 	keywords="python,oauth2",
-    version="0.1-alpha-3",
+    version="0.1.1",
     description="A simple, lightweight OAuth2 client",
     author="Demian Brecht",
     author_email="demianbrecht@gmail.com",
 	url="https://github.com/demianbrecht/sanction",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 5 - Production",
         "Environment :: Web Environment",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
