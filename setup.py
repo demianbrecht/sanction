@@ -7,13 +7,13 @@ README = open(os.path.join(here, "README.rst")).read()
 requires = []
 
 setup(name="sanction",
-    version="0.1-alpha-1",
+    version="0.1-alpha-2",
     description="",
     author="Demian Brecht",
     author_email="demianbrecht@gmail.com",
-	url="https://github.com/demianbrecht/py-sanction",
+	url="https://github.com/demianbrecht/sanction",
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 3 - Alpha",
         "Environment :: Web Environment",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
