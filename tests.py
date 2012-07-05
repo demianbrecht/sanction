@@ -60,6 +60,7 @@ class SanctionTests(TestCase):
 	def test_facebook_client_credentials(self):
 		c = Client(
 			token_endpoint="https://graph.facebook.com/oauth/access_token",
+			resource_endpoint="https://graph.facebook.com",
 			client_id="285809954824916",
 			client_secret="d985f6a3ecaffd11d61b3cd026b8753a")
 
@@ -67,6 +68,9 @@ class SanctionTests(TestCase):
 		c.request_token(parser=lambda data: dict(parse_qsl(data)),
 			grant_type="client_credentials")
 		self.assertIsNotNone(c.access_token)
+
+		data = c.request("/app")
+		self.assertEquals(data["name"], "sanction")
 
 	
 

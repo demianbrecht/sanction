@@ -7,16 +7,6 @@ sanction [sangk-shuhn]: authoritative permission or approval, as for an action.
    :depth: 3
 
 
-:note: sanction has undergone a major overhaul!
-
-       After spending some time with Python in a professional capacity, I decided
-       that what I had originally written was quite horribly over-engineered and 
-       would take *far* too much effort in maintenance.
-
-       So, the current implementation assumes that you have at least a *basic* 
-       understanding of the OAuth2 protocol.
-
-
 Overview
 --------
 sanction is an implementation of the OAuth2 protocol that provides the
@@ -31,9 +21,14 @@ following features:
 
 sanction has been tested with the following OAuth2 providers:
 
-* Facebook
+* Facebook (include the test API)
 * Google
 * Foursquare
+
+:note: The intention of the sanction library is to not only provide accessibility
+       to the OAuth2 authorization code flow, but all server-side flows. However,
+       due to lack of implementations, the only tested currently teseted flows
+       are authorization code and client credentials.
 
 
 Quickstart
