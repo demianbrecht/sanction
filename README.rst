@@ -86,7 +86,7 @@ that will be included if the provider's response::
 :note: It is **strongly** encouraged that you use the ``state`` parameter to 
        offer CSRF protection. It is also up to you to process the ``state``
        parameter and handle redirection accordingly *before* calling 
-       ``auth_received``.
+       ``request_token``.
 
 
 Access Token Request
@@ -96,7 +96,7 @@ will be redirected to the ``redirect_uri`` as specified by the value of the ``GE
 param. In order to request an access token from the provider, you must
 tell the ``Client`` that authorization has been received::
 
-    c.auth_recieved(response_dict)
+    c.request_token(response_dict)
 
 If the user has granted access and your config settings are correct, you should
 then be able to access protected resources through the adapter's API::
