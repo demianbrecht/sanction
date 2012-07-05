@@ -94,7 +94,7 @@ Access Token Request
 When the user has granted or denied resource access to your application, they
 will be redirected to the ``redirect_uri`` as specified by the value of the ``GET``
 param. In order to request an access token from the provider, you must
-tell the ``Client`` that authorization has been received::
+request an access token from the provider::
 
     c.request_token(response_dict)
 
