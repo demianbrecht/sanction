@@ -1,5 +1,5 @@
-.. image:: https://secure.travis-ci.org/demianbrecht/py-sanction.png?branch=master
-   :target: http://travis-ci.org/#!/demianbrecht/py-sanction
+.. image:: https://secure.travis-ci.org/demianbrecht/sanction.png?branch=master
+   :target: http://travis-ci.org/#!/demianbrecht/sanction
 
 sanction [sangk-shuhn]: authoritative permission or approval, as for an action. 
 
