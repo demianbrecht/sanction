@@ -84,7 +84,7 @@ class Handler(BaseHTTPRequestHandler):
 			redirect_uri="http://localhost:8080/login/google",
 			client_id=config["google.client_id"],
 			client_secret=config["google.client_secret"])
-		c.auth_received(data)
+		c.request_token(data=data)
 
 		self.wfile.write("Access token: %s<br>" % c.access_token)
 
@@ -117,7 +117,7 @@ class Handler(BaseHTTPRequestHandler):
 			redirect_uri="http://localhost:8080/login/facebook",
 			client_id=config["facebook.client_id"],
 			client_secret=config["facebook.client_secret"])
-		c.auth_received(data, 
+		c.request_token(data=data, 
 			parser = lambda data: dict(parse_qsl(data)))
 
 		d = c.request("/me")
@@ -161,7 +161,7 @@ class Handler(BaseHTTPRequestHandler):
 			client_secret=config["foursquare.client_secret"],
 			)
 		c.access_token_key = "oauth_token"
-		c.auth_received(data)
+		c.request_token(data=data)
 
 		d = c.request("/users/24700343")
 

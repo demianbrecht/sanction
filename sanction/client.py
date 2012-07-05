@@ -14,6 +14,7 @@ class Client(object):
 		self.redirect_uri = redirect_uri
 		self.client_id = client_id
 		self.client_secret = client_secret
+		self.access_token = None
 
 		self.access_token_key = "access_token"
 
@@ -34,12 +35,16 @@ class Client(object):
 		return "%s?%s" % (self.auth_endpoint, urlencode(o))
 
 
-	def auth_received(self, qs, parser=None):
-		if qs.has_key("error"):
-			raise IOError(qs["error"])
+	def request_token(self, data=None, parser=None, grant_type=None):
+		data = data and data or {}
+		if data.has_key("error"):
+			raise IOError(data["error"])
 		else:
-			self.__get_access_token(qs["code"], self.client_id,
-				self.client_secret, parser=parser)
+			kwargs = {"grant_type": grant_type}
+			if "code" in data: kwargs["code"] = data["code"]
+
+			self.__get_access_token(self.client_id,
+				self.client_secret, parser=parser, **kwargs)
 
 
 	def request(self, path, qs=None, data=None):
@@ -53,15 +58,15 @@ class Client(object):
 		return loads(h.read())
 
 
-	def __get_access_token(self, code, client_id, client_secret, 
+	def __get_access_token(self, client_id, client_secret, code=None,
 		grant_type=None, parser=None): 
 		parser = parser and parser or loads
 		o = {
-			"code": code,
 			"client_id": client_id,
 			"client_secret": client_secret,
 			"grant_type": grant_type and grant_type or "authorization_code"
 		}
+		if code is not None: o["code"] = code
 		if self.redirect_uri is not None: 
 			o["redirect_uri"] = self.redirect_uri
 
