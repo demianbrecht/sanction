@@ -7,8 +7,9 @@ README = open(os.path.join(here, "README.rst")).read()
 requires = []
 
 setup(name="sanction",
+	keywords="python,oauth2",
     version="0.1-alpha-2",
-    description="",
+    description="A simple, lightweight OAuth2 client",
     author="Demian Brecht",
     author_email="demianbrecht@gmail.com",
 	url="https://github.com/demianbrecht/sanction",
