@@ -12,21 +12,30 @@ Overview
 sanction is a lightweight, dead simple client implementation of the 
 OAuth2 protocol. The major goals of the library are:
 
-* Support multiple providers
- * Most providers have varying levels of diversion from the official
-   spec. The goal with this library is to either handle these diversions
-   natively, or expose a method to allow client code to deal with it 
-   efficiently and effectively.
-* Support all server-side OAuth2 flows
- * Three of the four OAuth2 flows should be supported by this library.
-   Currently, only authorization code and client credential flows have
-   been tested due to lack of other (known) implementations.
+- Support multiple providers
+
+  - Most providers have varying levels of diversion from the official
+    spec. The goal with this library is to either handle these diversions
+    natively, or expose a method to allow client code to deal with it 
+    efficiently and effectively.
+    
+- Support all server-side OAuth2 flows
+
+  - Three of the four OAuth2 flows should be supported by this library.
+    Currently, only authorization code and client credential flows have
+    been tested due to lack of other (known) implementations.
 
 sanction has been tested with the following OAuth2 providers:
 
-* Facebook (include the test API)
-* Google
-* Foursquare
+* Facebook_ (include the test API)
+* Google_
+* Foursquare_
+* bitly_
+
+.. _Facebook: https://developers.facebook.com/docs/authentication/
+.. _Google: https://developers.google.com/accounts/docs/OAuth2
+.. _Foursquare: https://developer.foursquare.com/overview/auth
+.. _bitly: http://dev.bitly.com/api.html
 
 :note: The intention of the sanction library is to not only provide accessibility
        to the OAuth2 authorization code flow, but all server-side flows. However,
