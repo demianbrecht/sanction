@@ -35,6 +35,8 @@ sanction has been tested with the following OAuth2 providers:
 .. _Facebook: https://developers.facebook.com/docs/authentication/
 .. _Google: https://developers.google.com/accounts/docs/OAuth2
 .. _Foursquare: https://developer.foursquare.com/overview/auth
+.. _GitHub: http://develop.github.com/p/oauth.html
+.. _Instagram: http://instagram.com/developer/
 .. _bitly: http://dev.bitly.com/api.html
 
 :note: The intention of the sanction library is to not only provide accessibility

@@ -45,6 +45,8 @@ class Handler(BaseHTTPRequestHandler):
 		"/oauth2/bitly": "handle_bitly",
 		"/login/github": "handle_github_login",
 		"/oauth2/github": "handle_github",
+		"/login/instagram": "handle_instagram_login",
+		"/oauth2/instagram": "handle_instagram",
 	}
 
 	def do_GET(self):
@@ -64,6 +66,7 @@ class Handler(BaseHTTPRequestHandler):
 			login with: <a href="/oauth2/google">Google</a>,
 			<a href="/oauth2/facebook">Facebook</a>,
 			<a href="/oauth2/github">GitHub</a>,
+			<a href="/oauth2/instagram">Instagram</a>,
 			<a href="/oauth2/foursquare">Foursquare</a>,
 			<a href="/oauth2/bitly">Bitly</a>,
 		''')
@@ -240,6 +243,35 @@ class Handler(BaseHTTPRequestHandler):
 		self.wfile.write("Location: %s<br>" % data["location"])
 		self.wfile.write("Hireable: %s<br>" % data["hireable"])
 
+
+	def handle_instagram(self, data):
+		self.send_response(302)
+		c = Client(auth_endpoint="https://api.instagram.com/oauth/authorize/",
+				client_id=config["instagram.client_id"],
+				redirect_uri="http://localhost:8080/login/instagram")
+		self.send_header("Location", c.auth_uri())
+		self.end_headers()
+
+
+	def handle_instagram_login(self, data):
+		self.send_response(200)
+		self.send_header("Content-type", "text/html")
+		self.log_message(self.path)
+		self.end_headers()
+
+		c = Client(token_endpoint="https://api.instagram.com/oauth/access_token",
+			resource_endpoint="https://api.instagram.com/v1",
+			redirect_uri="http://localhost:8080/login/instagram",
+			client_id=config["instagram.client_id"],
+			client_secret=config["instagram.client_secret"])
+		c.request_token(data=data)
+
+		self.wfile.write("Access token: %s<br>" % c.access_token)
+
+		data = c.request("/users/self")["data"]
+		self.wfile.write("Full name: %s<br>" % data["full_name"])
+		self.wfile.write("User name: %s<br>" % data["username"])
+		self.wfile.write("Profile picture: <img src='%s' /><br>" % data["profile_picture"])
 
 
 def main(): 
