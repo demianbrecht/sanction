@@ -95,11 +95,13 @@ class Handler(BaseHTTPRequestHandler):
             redirect_uri="http://localhost/login/stackexchange",
             client_id=config["stackexchange.client_id"],
             client_secret=config["stackexchange.client_secret"])
+
         c.request_token(data=data,
-        parser = lambda data: dict(parse_qsl(data)))
+            parser = lambda data: dict(parse_qsl(data)))
 
         self.wfile.write("Access token: %s<br>" % c.access_token)
 
+        # TODO: Add parser method to request
         data = c.request("/me", qs={
             "site": "stackoverflow.com",
             "key": config["stackexchange.key"]
