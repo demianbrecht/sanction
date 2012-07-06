@@ -9,6 +9,7 @@ from urlparse import urlparse, parse_qsl
 from urllib import urlencode, quote_plus
 from StringIO import StringIO
 from gzip import GzipFile
+from json import loads
 
 from sanction.client import Client
 
@@ -88,6 +89,12 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
 
+    def __gunzip(self, data):
+        s = StringIO(data)
+        gz = GzipFile(fileobj=s, mode="rb")
+        return gz.read()
+
+
     @all_good
     def handle_stackexchange_login(self, data):
         c = Client(token_endpoint="https://stackexchange.com/oauth/access_token",
@@ -101,12 +108,17 @@ class Handler(BaseHTTPRequestHandler):
 
         self.wfile.write("Access token: %s<br>" % c.access_token)
 
-        # TODO: Add parser method to request
         data = c.request("/me", qs={
             "site": "stackoverflow.com",
             "key": config["stackexchange.key"]
-        })
-        # TODO: Show something here
+            }, parser=lambda c: loads(self.__gunzip(c)))["items"][0]
+
+        self.wfile.write("Display name: %s<br>" % data["display_name"])
+        self.wfile.write("Last accessed: %s<br>" % data["last_access_date"])
+        self.wfile.write("Profile picture: <img src='%s' /><br>" %
+            data["profile_image"])
+        
+
 
     def handle_google(self, data):
         self.send_response(302)
@@ -116,6 +128,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Location", c.auth_uri(
             scope=config["google.scope"].split(",")))    
         self.end_headers()
+
 
     @all_good
     def handle_google_login(self, data):

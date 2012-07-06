@@ -50,8 +50,9 @@ class Client(object):
         self.client_secret, parser=parser, **kwargs)
 
 
-    def request(self, path, qs=None, data=None):
+    def request(self, path, qs=None, data=None, parser=None):
         assert(self.access_token is not None)
+        parser = parser and parser or loads
         if qs is None: qs = {}
         qs.update({
             self.access_token_key: self.access_token
@@ -59,7 +60,7 @@ class Client(object):
         path = "%s%s?%s" % (self.resource_endpoint, path, urlencode(qs))
         h = urlopen(path, data)
 
-        return loads(h.read())
+        return parser(h.read())
 
 
     def __get_access_token(self, client_id, client_secret, code=None,
