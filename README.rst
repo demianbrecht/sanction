@@ -118,10 +118,23 @@ request an access token from the provider::
 
     c.request_token(response_dict)
 
+
+Resource Request
+````````````````
+
 If the user has granted access and your config settings are correct, you should
 then be able to access protected resources through the adapter's API::
 
     c.request("/userinfo")
+
+If the provider has deviated from the OAuth2 spec and the response isn't JSON
+(i.e. Stack Exchange), you can pass a custom parser to ``request``::
+
+    c.request("/userinfo", parser=lambda c: dosomething(c))
+
+
+Notes:
+``````
 
 There are no implementations for individual OAuth2-exposed resources. This is not
 the intention of the library and will not be added.
