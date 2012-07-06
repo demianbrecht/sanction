@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# vim: set ts=4 sw=4 et:
 
 import logging
 
@@ -44,6 +45,8 @@ class Handler(BaseHTTPRequestHandler):
         "/oauth2/github": "handle_github",
         "/login/instagram": "handle_instagram_login",
         "/oauth2/instagram": "handle_instagram",
+        "/login/stackexchange": "handle_stackexchange_login",
+        "/oauth2/stackexchange": "handle_stackexchange",
     }
 
     def do_GET(self):
@@ -69,16 +72,45 @@ class Handler(BaseHTTPRequestHandler):
             login with: <a href="/oauth2/google">Google</a>,
             <a href="/oauth2/facebook">Facebook</a>,
             <a href="/oauth2/github">GitHub</a>,
+            <a href="/oauth2/stackexchange">Stack Exchange</a>,
             <a href="/oauth2/instagram">Instagram</a>,
             <a href="/oauth2/foursquare">Foursquare</a>,
             <a href="/oauth2/bitly">Bitly</a>,
         ''')
 
+
+    def handle_stackexchange(self, data):
+        self.send_response(302)
+        c = Client(auth_endpoint="https://stackexchange.com/oauth",
+            client_id=config["stackexchange.client_id"],
+            redirect_uri="http://localhost/login/stackexchange")
+        self.send_header("Location", c.auth_uri())
+        self.end_headers()
+
+
+    @all_good
+    def handle_stackexchange_login(self, data):
+        c = Client(token_endpoint="https://stackexchange.com/oauth/access_token",
+            resource_endpoint="https://api.stackexchange.com/2.0",
+            redirect_uri="http://localhost/login/stackexchange",
+            client_id=config["stackexchange.client_id"],
+            client_secret=config["stackexchange.client_secret"])
+        c.request_token(data=data,
+        parser = lambda data: dict(parse_qsl(data)))
+
+        self.wfile.write("Access token: %s<br>" % c.access_token)
+
+        data = c.request("/me", qs={
+            "site": "stackoverflow.com",
+            "key": config["stackexchange.key"]
+        })
+        # TODO: Show something here
+
     def handle_google(self, data):
         self.send_response(302)
         c = Client(auth_endpoint="https://accounts.google.com/o/oauth2/auth",
             client_id=config["google.client_id"],
-            redirect_uri="http://localhost:8080/login/google")
+            redirect_uri="http://localhost/login/google")
         self.send_header("Location", c.auth_uri(
             scope=config["google.scope"].split(",")))    
         self.end_headers()
@@ -87,7 +119,7 @@ class Handler(BaseHTTPRequestHandler):
     def handle_google_login(self, data):
         c = Client(token_endpoint="https://accounts.google.com/o/oauth2/token",
             resource_endpoint="https://www.googleapis.com/oauth2/v1",
-            redirect_uri="http://localhost:8080/login/google",
+            redirect_uri="http://localhost/login/google",
             client_id=config["google.client_id"],
             client_secret=config["google.client_secret"])
         c.request_token(data=data)
@@ -104,7 +136,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(302)
         c = Client(auth_endpoint="https://www.facebook.com/dialog/oauth",
                 client_id=config["facebook.client_id"],
-                redirect_uri="http://localhost:8080/login/facebook")
+                redirect_uri="http://localhost/login/facebook")
         self.send_header("Location", c.auth_uri(
             scope=config["facebook.scope"].split(","),
             scope_delim=","))
@@ -115,7 +147,7 @@ class Handler(BaseHTTPRequestHandler):
         c = Client(
             token_endpoint="https://graph.facebook.com/oauth/access_token",
             resource_endpoint="https://graph.facebook.com",
-            redirect_uri="http://localhost:8080/login/facebook",
+            redirect_uri="http://localhost/login/facebook",
             client_id=config["facebook.client_id"],
             client_secret=config["facebook.client_secret"])
         c.request_token(data=data,
@@ -143,7 +175,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(302)
         c = Client(auth_endpoint="https://foursquare.com/oauth2/authenticate",
                 client_id=config["foursquare.client_id"],
-                redirect_uri="http://localhost:8080/login/foursquare")
+                redirect_uri="http://localhost/login/foursquare")
         self.send_header("Location", c.auth_uri())
         self.end_headers()
 
@@ -152,7 +184,7 @@ class Handler(BaseHTTPRequestHandler):
         c = Client(
             token_endpoint="https://foursquare.com/oauth2/access_token",
             resource_endpoint="https://api.foursquare.com/v2",
-            redirect_uri="http://localhost:8080/login/foursquare",
+            redirect_uri="http://localhost/login/foursquare",
             client_id=config["foursquare.client_id"],
             client_secret=config["foursquare.client_secret"],
             )
@@ -174,15 +206,16 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(302)
         c = Client(auth_endpoint="https://bitly.com/oauth/authorize",
                 client_id=config["bitly.client_id"],
-                redirect_uri="http://localhost:8080/login/bitly")
+                redirect_uri="http://localhost/login/bitly")
         self.send_header("Location", c.auth_uri())
         self.end_headers()
+
 
     @all_good
     def handle_bitly_login(self, data):
         c = Client(token_endpoint="https://api-ssl.bitly.com/oauth/access_token",
             resource_endpoint="https://api-ssl.bitly.com",
-            redirect_uri="http://localhost:8080/login/bitly",
+            redirect_uri="http://localhost/login/bitly",
             client_id=config["bitly.client_id"],
             client_secret=config["bitly.client_secret"])
         c.request_token(data=data,
@@ -199,15 +232,16 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(302)
         c = Client(auth_endpoint="https://github.com/login/oauth/authorize",
                 client_id=config["github.client_id"],
-                redirect_uri="http://localhost:8080/login/github")
+                redirect_uri="http://localhost/login/github")
         self.send_header("Location", c.auth_uri())
         self.end_headers()
+
 
     @all_good
     def handle_github_login(self, data):
         c = Client(token_endpoint="https://github.com/login/oauth/access_token",
             resource_endpoint="https://api.github.com",
-            redirect_uri="http://localhost:8080/login/github",
+            redirect_uri="http://localhost/login/github",
             client_id=config["github.client_id"],
             client_secret=config["github.client_secret"])
         c.request_token(data=data,
@@ -225,15 +259,16 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(302)
         c = Client(auth_endpoint="https://api.instagram.com/oauth/authorize/",
                 client_id=config["instagram.client_id"],
-                redirect_uri="http://localhost:8080/login/instagram")
+                redirect_uri="http://localhost/login/instagram")
         self.send_header("Location", c.auth_uri())
         self.end_headers()
+
 
     @all_good
     def handle_instagram_login(self, data):
         c = Client(token_endpoint="https://api.instagram.com/oauth/access_token",
             resource_endpoint="https://api.instagram.com/v1",
-            redirect_uri="http://localhost:8080/login/instagram",
+            redirect_uri="http://localhost/login/instagram",
             client_id=config["instagram.client_id"],
             client_secret=config["instagram.client_secret"])
         c.request_token(data=data)
@@ -252,3 +287,4 @@ if __name__ == "__main__":
     server = HTTPServer(server_address, Handler)
     l.info("Starting server on %sport %s \nPress <ctrl>+c to exit" % server_address)
     server.serve_forever()
+

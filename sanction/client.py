@@ -55,6 +55,7 @@ class Client(object):
 		})
 		path = "%s%s?%s" % (self.resource_endpoint, path, urlencode(qs))
 		h = urlopen(path, data)
+
 		return loads(h.read())
 
 
