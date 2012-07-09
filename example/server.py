@@ -48,6 +48,8 @@ class Handler(BaseHTTPRequestHandler):
         "/oauth2/instagram": "handle_instagram",
         "/login/stackexchange": "handle_stackexchange_login",
         "/oauth2/stackexchange": "handle_stackexchange",
+        "/login/deviantart": "handle_deviantart_login",
+        "/oauth2/deviantart": "handle_deviantart",
     }
 
     def do_GET(self):
@@ -77,6 +79,7 @@ class Handler(BaseHTTPRequestHandler):
             <a href="/oauth2/instagram">Instagram</a>,
             <a href="/oauth2/foursquare">Foursquare</a>,
             <a href="/oauth2/bitly">Bitly</a>,
+            <a href="/oauth2/deviantart">Deviant Art</a>,
         ''')
 
 
@@ -294,6 +297,33 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write("Full name: %s<br>" % data["full_name"])
         self.wfile.write("User name: %s<br>" % data["username"])
         self.wfile.write("Profile picture: <img src='%s' /><br>" % data["profile_picture"])
+
+
+    def handle_deviantart(self, data):
+        self.send_response(302)
+        c = Client(
+            auth_endpoint="https://www.deviantart.com/oauth2/draft15/authorize",
+            client_id=config["deviantart.client_id"],
+            redirect_uri=config["deviantart.redirect_uri"])
+        self.send_header("Location", c.auth_uri())
+        self.end_headers()
+
+
+    @all_good
+    def handle_deviantart_login(self, data):
+        c = Client(
+            token_endpoint="https://www.deviantart.com/oauth2/draft15/token",
+            resource_endpoint="https://www.deviantart.com/api/draft15",
+            redirect_uri=config["deviantart.redirect_uri"],
+            client_id=config["deviantart.client_id"],
+            client_secret=config["deviantart.client_secret"])
+        c.request_token(data=data)
+
+        self.wfile.write("Access token: %s<br>" % c.access_token)
+
+        data = c.request("/user/whoami")
+        self.wfile.write("User name: %s<br>" % data["username"])
+        self.wfile.write("User icon: <img src='%s' /><br>" % data["usericonurl"])
 
 
 if __name__ == "__main__":
