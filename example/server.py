@@ -109,19 +109,24 @@ class Handler(BaseHTTPRequestHandler):
         c.request_token(data=data,
             parser = lambda data: dict(parse_qsl(data)))
 
-        self.wfile.write("Access token: %s<br>" % c.access_token)
-
+        self.dump_client(c)
         data = c.request("/me", qs={
             "site": "stackoverflow.com",
             "key": config["stackexchange.key"]
             }, parser=lambda c: loads(self.__gunzip(c)))["items"][0]
 
-        self.wfile.write("Display name: %s<br>" % data["display_name"])
-        self.wfile.write("Last accessed: %s<br>" % data["last_access_date"])
-        self.wfile.write("Profile picture: <img src='%s' /><br>" %
-            data["profile_image"])
-        
+        self.dump_response(data)
 
+        
+    def dump_response(self, data):
+        for k in data:
+            self.wfile.write("%s: %s<br>" % (k, data[k],))
+
+
+    def dump_client(self, c):
+        for k in c.__dict__:
+            self.wfile.write("%s: %s<br>" % (k, c.__dict__[k],))
+        self.wfile.write("<hr/>")
 
     def handle_google(self, data):
         self.send_response(302)
@@ -142,12 +147,9 @@ class Handler(BaseHTTPRequestHandler):
             client_secret=config["google.client_secret"])
         c.request_token(data=data)
 
-        self.wfile.write("Access token: %s<br>" % c.access_token)
-
+        self.dump_client(c)
         data = c.request("/userinfo")
-        self.wfile.write("First name: %s<br>" % data["name"])
-        self.wfile.write("Last name: %s<br>" % data["family_name"])
-        self.wfile.write("Email: %s<br>" % data["email"])
+        self.dump_response(data)
 
         
     def handle_facebook(self, data):
@@ -168,17 +170,14 @@ class Handler(BaseHTTPRequestHandler):
             redirect_uri="http://localhost/login/facebook",
             client_id=config["facebook.client_id"],
             client_secret=config["facebook.client_secret"])
+
         c.request_token(data=data,
             parser=lambda data: dict(parse_qsl(data)))
 
+        self.dump_client(c)
         d = c.request("/me")
+        self.dump_response(d)
 
-        self.wfile.write("Access token: %s<br>" % c.access_token)
-        self.wfile.write("First name: %s<br>" % d["first_name"])
-        self.wfile.write("Last name: %s<br>" % d["last_name"])
-        self.wfile.write("Email: %s<br>" % d["email"])
-
-        # to see a wall post in action, uncomment this
         try:
             d = c.request("/me/feed", data=urlencode({
                 "message": "test post from py-sanction"
@@ -189,6 +188,7 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(
                 "Unable to post to your wall")
 
+
     def handle_foursquare(self, data):
         self.send_response(302)
         c = Client(auth_endpoint="https://foursquare.com/oauth2/authenticate",
@@ -196,6 +196,7 @@ class Handler(BaseHTTPRequestHandler):
                 redirect_uri="http://localhost/login/foursquare")
         self.send_header("Location", c.auth_uri())
         self.end_headers()
+
 
     @all_good
     def handle_foursquare_login(self, data):
@@ -209,15 +210,9 @@ class Handler(BaseHTTPRequestHandler):
         c.access_token_key = "oauth_token"
         c.request_token(data=data)
 
+        self.dump_client(c)
         d = c.request("/users/24700343")
-
-        self.wfile.write("Access token: %s<br>" % c.access_token)
-        self.wfile.write("First name: %s<br>" % 
-            d["response"]["user"]["firstName"])
-        self.wfile.write("Last name: %s<br>" % 
-            d["response"]["user"]["lastName"])
-        self.wfile.write("Email: %s<br>" % 
-            d["response"]["user"]["contact"]["email"])
+        self.dump_response(d)
 
 
     def handle_bitly(self, data):
@@ -239,11 +234,9 @@ class Handler(BaseHTTPRequestHandler):
         c.request_token(data=data,
             parser=lambda data: dict(parse_qsl(data)))
 
-        self.wfile.write("Access token: %s<br>" % c.access_token)
-
+        self.dump_client(c)
         data = c.request("/v3/user/info")["data"]
-        self.wfile.write("Full name: %s<br>" % data["full_name"])
-        self.wfile.write("Member since: %s<br>" % data["member_since"])
+        self.dump_response(data)
 
 
     def handle_github(self, data):
@@ -265,12 +258,9 @@ class Handler(BaseHTTPRequestHandler):
         c.request_token(data=data,
             parser=lambda data: dict(parse_qsl(data)))
 
-        self.wfile.write("Access token: %s<br>" % c.access_token)
-
+        self.dump_client(c)
         data = c.request("/user")
-        self.wfile.write("Full name: %s<br>" % data["name"])
-        self.wfile.write("Location: %s<br>" % data["location"])
-        self.wfile.write("Hireable: %s<br>" % data["hireable"])
+        self.dump_response(data)
 
 
     def handle_instagram(self, data):
@@ -291,12 +281,9 @@ class Handler(BaseHTTPRequestHandler):
             client_secret=config["instagram.client_secret"])
         c.request_token(data=data)
 
-        self.wfile.write("Access token: %s<br>" % c.access_token)
-
+        self.dump_client(c)
         data = c.request("/users/self")["data"]
-        self.wfile.write("Full name: %s<br>" % data["full_name"])
-        self.wfile.write("User name: %s<br>" % data["username"])
-        self.wfile.write("Profile picture: <img src='%s' /><br>" % data["profile_picture"])
+        self.dump_response(data)
 
 
     def handle_deviantart(self, data):
@@ -319,11 +306,9 @@ class Handler(BaseHTTPRequestHandler):
             client_secret=config["deviantart.client_secret"])
         c.request_token(data=data)
 
-        self.wfile.write("Access token: %s<br>" % c.access_token)
-
+        self.dump_client(c)
         data = c.request("/user/whoami")
-        self.wfile.write("User name: %s<br>" % data["username"])
-        self.wfile.write("User icon: <img src='%s' /><br>" % data["usericonurl"])
+        self.dump_response(data)
 
 
 if __name__ == "__main__":

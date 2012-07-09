@@ -78,12 +78,9 @@ class Client(object):
 
         h = urlopen(self.token_endpoint, urlencode(o))
         r = parser(h.read())
-        self.access_token = r["access_token"]
 
-        keys = filter(lambda a: a in r, ("expires", "expires_in"))
-        expires_key = len(keys) > 0 and keys[0] or None
-        if expires_key is not None:
-            self.expires_in = r[expires_key]
+        for key in r:
+            setattr(self, key, r[key])
 
-        self.token_type = r.get("token_type", None)
+        assert(self.access_token is not None)
 
