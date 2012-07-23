@@ -1,6 +1,10 @@
 .. image:: https://secure.travis-ci.org/demianbrecht/sanction.png?branch=master
    :target: http://travis-ci.org/#!/demianbrecht/sanction
 
+.. raw:: html
+
+   <iframe style="border: 0; margin: 0; padding: 0;" src="https://www.gittip.com/demianbrecht/widget.html" width="48pt" height="20pt"></iframe>
+
 sanction [sangk-shuhn]: authoritative permission or approval, as for an action. 
 
 .. contents::
