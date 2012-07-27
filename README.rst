@@ -16,12 +16,13 @@ Overview
 sanction is a lightweight, dead simple client implementation of the 
 OAuth2 protocol. The major goals of the library are:
 
-- Be small
+- Grok me 
   
   - Variations on OAuth2 client implementation range from a few hundred
     LOC to thousands. In a Pythonic world, there's absolutely no need for
     this when simply dealing with the client side of the spec. Currently,
-    sanction sits at a whopping 65 LOC.
+    sanction sits at a whopping 65 LOC, one class. This makes the library
+    tremendously easy to grok.
 
 - Support multiple providers
 
