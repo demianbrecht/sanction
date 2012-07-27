@@ -47,7 +47,7 @@ class Client(object):
         if "code" in data: kwargs["code"] = data["code"]
 
         self.__get_access_token(self.client_id,
-        self.client_secret, parser=parser, **kwargs)
+            self.client_secret, parser=parser, **kwargs)
 
 
     def request(self, path, qs=None, data=None, parser=None):

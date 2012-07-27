@@ -106,7 +106,7 @@ authorization uri (continuation from previous code block)::
 You can also elect to use the optional ``state`` parameter to pass a CSRF token
 that will be included if the provider's response::
 
-    my_redirect(client.flow.authorization_uri(state=my_state))
+    my_redirect(c.auth_uri(state=my_state))
 
 :note: It is **strongly** encouraged that you use the ``state`` parameter to 
        offer CSRF protection. It is also up to you to process the ``state``
