@@ -65,6 +65,7 @@ class Client(object):
 
     def __get_access_token(self, client_id, client_secret, code=None,
         grant_type=None, parser=None): 
+        assert(self.token_endpoint is not None)
 
         parser = parser and parser or loads
         o = {
