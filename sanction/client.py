@@ -49,6 +49,22 @@ class Client(object):
         self.__get_access_token(self.client_id,
             self.client_secret, parser=parser, **kwargs)
 
+    def use_refresh_token(self, refresh_token, parser=None):
+        if parser is None:
+            parser = loads
+        request_data = {
+            'grant_type': 'refresh_token',
+            'client_id': self.client_id,
+            'client_secret': self.client_secret,
+            'refresh_token': refresh_token,
+        }
+        response = urlopen(self.token_endpoint, urlencode(request_data))
+        response_data = parser(response.read())
+
+        for key in response_data:
+            setattr(self, key, response_data[key])
+
+        assert(self.access_token is not None)
 
     def request(self, path, qs=None, data=None, parser=None):
         assert(self.access_token is not None)
