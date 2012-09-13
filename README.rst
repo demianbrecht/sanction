@@ -132,6 +132,18 @@ request an access token from the provider::
 
     c.request_token(response_dict)
 
+Refresh Token
+`````````````
+If the OAuth provider returns a ``refresh_token``, it will be available after
+the call to ``request_token`` as ``client.refresh_token``. You can save this token
+and use it later to request another access token::
+
+    c.use_refresh_token(refresh_token)
+
+You can use this code instead of the usual ``auth_uri`` and ``request_token`` dance
+when you already have a refresh token and the access token expires.
+
+:note: Not all providers use refresh tokens.
 
 Refreshing Access Tokens
 ````````````````````````
