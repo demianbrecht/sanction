@@ -3,7 +3,6 @@
 from json import loads
 from urllib import urlencode
 from urllib2 import urlopen
-from urlparse import parse_qsl
 
 class Client(object):
 
