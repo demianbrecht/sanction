@@ -103,6 +103,7 @@ Of course, you may create the config ``dict`` in your preferred method, the
 above is simply for demonstration using the required config settings (the
 example project uses ``ConfigParser`` against an ``.ini`` file for settings.
 
+
 Authorization Request
 `````````````````````
 The next step is to redirect the user agent to the provider's authentication/
@@ -132,6 +133,20 @@ request an access token from the provider::
     c.request_token(response_dict)
 
 
+Refreshing Access Tokens
+````````````````````````
+Some (not all) providers provide the ability to refresh a given access token,
+giving an application to users' data even if they're offline (Google is one
+of these providers). If your client previously received a refresh token
+with the initial code/token exchange, then you can use the ``request_token``
+API to request a refreshed token::
+
+    c.request_token(grant_type='refresh_token',
+        refresh_token=my_refresh_token)
+
+An example of this is shown in the Google login handler in the sample app.
+
+
 Resource Request
 ````````````````
 
@@ -152,4 +167,11 @@ Notes:
 There are no implementations for individual OAuth2-exposed resources. This is not
 the intention of the library and will not be added.
 
+
+Thanks:
+```````
+
+`Jake Basile`_ for pointing out the oversight of the ``refresh_token``.
+
+.. _`Jake Basile`: https://github.com/jakebasile
 

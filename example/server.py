@@ -134,7 +134,7 @@ class Handler(BaseHTTPRequestHandler):
             client_id=config["google.client_id"],
             redirect_uri="http://localhost/login/google")
         self.send_header("Location", c.auth_uri(
-            scope=config["google.scope"].split(",")))    
+            scope=config["google.scope"].split(","), access_type="offline"))    
         self.end_headers()
 
 
@@ -150,6 +150,17 @@ class Handler(BaseHTTPRequestHandler):
         self.dump_client(c)
         data = c.request("/userinfo")
         self.dump_response(data)
+
+        if hasattr(c, "refresh_token"):
+            rc = Client(token_endpoint=c.token_endpoint,
+                client_id=c.client_id,
+                client_secret=c.client_secret,
+                resource_endpoint=c.resource_endpoint)
+
+            rc.request_token(grant_type="refresh_token", 
+                refresh_token=c.refresh_token)
+            self.wfile.write("<p>post refresh token:</p>")
+            self.dump_client(rc)
 
         
     def handle_facebook(self, data):

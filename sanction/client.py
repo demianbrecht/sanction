@@ -37,16 +37,47 @@ class Client(object):
         return "%s?%s" % (self.auth_endpoint, urlencode(o))
 
 
-    def request_token(self, data=None, parser=None, grant_type=None):
+    def request_token(self, data=None, grant_type=None, parser=None, **kwargs):
+        """ Request an access token from the token endpoint
+        :param data: If applicable to the flow, this should be a dict 
+                     containing data returned from the authorization
+                     endpoint.
+        :param parser: Callback to deal with returned data. Not all providers
+                       use JSON.
+        :param grant_type: The grant type of the request. These may be types
+                           such as authorization_code, client_credentials,
+                           refresh_token, etc.
+        :param kwargs: Any other data that should be sent along with the 
+                       token request to the token endpoint. For example, when
+                       issuing a request to refresh a token, the refresh_token
+                       param must be sent along with the request.
+        """
+        kwargs = kwargs and kwargs or {}
         data = data and data or {}
         if data.has_key("error"):
             raise IOError(data["error"])
         else:
-            kwargs = {"grant_type": grant_type}
-        if "code" in data: kwargs["code"] = data["code"]
+            kwargs.update({'grant_type': grant_type})
+        if "code" in data: kwargs.update({'code': data['code']})
 
-        self.__get_access_token(self.client_id,
-            self.client_secret, parser=parser, **kwargs)
+        assert(self.token_endpoint is not None)
+
+        parser = parser and parser or loads
+        kwargs.update({
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "grant_type": grant_type and grant_type or "authorization_code"
+        })
+        if self.redirect_uri is not None: 
+            kwargs.update({'redirect_uri': self.redirect_uri})
+
+        h = urlopen(self.token_endpoint, urlencode(kwargs))
+        r = parser(h.read())
+
+        for key in r:
+            setattr(self, key, r[key])
+
+        assert(self.access_token is not None)
 
 
     def request(self, path, qs=None, data=None, parser=None):
@@ -61,26 +92,4 @@ class Client(object):
 
         return parser(h.read())
 
-
-    def __get_access_token(self, client_id, client_secret, code=None,
-        grant_type=None, parser=None): 
-        assert(self.token_endpoint is not None)
-
-        parser = parser and parser or loads
-        o = {
-            "client_id": client_id,
-            "client_secret": client_secret,
-            "grant_type": grant_type and grant_type or "authorization_code"
-        }
-        if code is not None: o["code"] = code
-        if self.redirect_uri is not None: 
-            o["redirect_uri"] = self.redirect_uri
-
-        h = urlopen(self.token_endpoint, urlencode(o))
-        r = parser(h.read())
-
-        for key in r:
-            setattr(self, key, r[key])
-
-        assert(self.access_token is not None)
 
