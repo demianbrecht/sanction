@@ -161,17 +161,20 @@ If the provider has deviated from the OAuth2 spec and the response isn't JSON
     c.request("/userinfo", parser=lambda c: dosomething(c))
 
 
-Notes:
-``````
+Notes
+-----
 
 There are no implementations for individual OAuth2-exposed resources. This is not
 the intention of the library and will not be added.
 
 
-Thanks:
-```````
+Thanks
+------
 
-`Jake Basile`_ for pointing out the oversight of the ``refresh_token``.
+`Jake Basile`_: Pointing out the oversight of the ``refresh_token``.
+`Alec Taylor`_: Example code refactor.
+
 
 .. _`Jake Basile`: https://github.com/jakebasile
+.. _`Alec Taylor`: https://github.com/AlecTaylor
 
