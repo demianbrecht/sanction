@@ -171,8 +171,8 @@ the intention of the library and will not be added.
 Thanks
 ------
 
-`Jake Basile`_: Pointing out the oversight of the ``refresh_token``.
-`Alec Taylor`_: Example code refactor.
+* `Jake Basile`_: Pointing out the oversight of the ``refresh_token``.
+* `Alec Taylor`_: Example code refactor.
 
 
 .. _`Jake Basile`: https://github.com/jakebasile
