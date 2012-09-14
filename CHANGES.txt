@@ -1,0 +1,3 @@
+sanction 0.1.4 (9-14-2012)
+==========================
+* Added support for refresh_token
