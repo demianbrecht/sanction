@@ -2,6 +2,7 @@
 # vim: set ts=4 sw=4 et:
 
 import logging
+import sys, os
 
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from ConfigParser import ConfigParser
@@ -10,6 +11,9 @@ from urllib import urlencode, quote_plus
 from StringIO import StringIO
 from gzip import GzipFile
 from json import loads
+
+# so we can run without installing
+sys.path.append(os.path.abspath('../'))
 
 from sanction.client import Client
 
@@ -106,7 +110,7 @@ class Handler(BaseHTTPRequestHandler):
             client_id=config["stackexchange.client_id"],
             client_secret=config["stackexchange.client_secret"])
 
-        c.request_token(data=data,
+        c.request_token(code=data["code"],
             parser = lambda data: dict(parse_qsl(data)))
 
         self.dump_client(c)
@@ -145,7 +149,7 @@ class Handler(BaseHTTPRequestHandler):
             redirect_uri="http://localhost/login/google",
             client_id=config["google.client_id"],
             client_secret=config["google.client_secret"])
-        c.request_token(data=data)
+        c.request_token(code=data["code"])
 
         self.dump_client(c)
         data = c.request("/userinfo")
@@ -182,7 +186,7 @@ class Handler(BaseHTTPRequestHandler):
             client_id=config["facebook.client_id"],
             client_secret=config["facebook.client_secret"])
 
-        c.request_token(data=data,
+        c.request_token(code=data["code"],
             parser=lambda data: dict(parse_qsl(data)))
 
         self.dump_client(c)
@@ -219,7 +223,7 @@ class Handler(BaseHTTPRequestHandler):
             client_secret=config["foursquare.client_secret"],
             )
         c.access_token_key = "oauth_token"
-        c.request_token(data=data)
+        c.request_token(code=data["code"])
 
         self.dump_client(c)
         d = c.request("/users/24700343")
@@ -242,7 +246,7 @@ class Handler(BaseHTTPRequestHandler):
             redirect_uri="http://localhost/login/bitly",
             client_id=config["bitly.client_id"],
             client_secret=config["bitly.client_secret"])
-        c.request_token(data=data,
+        c.request_token(code=data["code"],
             parser=lambda data: dict(parse_qsl(data)))
 
         self.dump_client(c)
@@ -266,7 +270,7 @@ class Handler(BaseHTTPRequestHandler):
             redirect_uri="http://localhost/login/github",
             client_id=config["github.client_id"],
             client_secret=config["github.client_secret"])
-        c.request_token(data=data,
+        c.request_token(code=data["code"],
             parser=lambda data: dict(parse_qsl(data)))
 
         self.dump_client(c)
@@ -290,7 +294,7 @@ class Handler(BaseHTTPRequestHandler):
             redirect_uri="http://localhost/login/instagram",
             client_id=config["instagram.client_id"],
             client_secret=config["instagram.client_secret"])
-        c.request_token(data=data)
+        c.request_token(code=data["code"])
 
         self.dump_client(c)
         data = c.request("/users/self")["data"]
@@ -315,7 +319,7 @@ class Handler(BaseHTTPRequestHandler):
             redirect_uri=config["deviantart.redirect_uri"],
             client_id=config["deviantart.client_id"],
             client_secret=config["deviantart.client_secret"])
-        c.request_token(data=data)
+        c.request_token(code=data["code"])
 
         self.dump_client(c)
         data = c.request("/user/whoami")

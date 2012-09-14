@@ -1,3 +1,5 @@
 sanction 0.1.4 (9-14-2012)
 ==========================
 * Added support for refresh_token
+* Removed check for endpoint errors in request_token. Client code should 
+  deal with that before calling request_token.

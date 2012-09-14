@@ -1,4 +1,10 @@
-.PHONY: test
+.PHONY: test, lint, example
 
 test:
-	nosetests --with-coverage --cover-package=sanction 
+	nosetests -s --pdb --with-coverage --cover-package=sanction 
+
+lint:
+	pylint sanction
+
+example:
+	cd example; python server.py
