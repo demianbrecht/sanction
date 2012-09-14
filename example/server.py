@@ -60,7 +60,7 @@ class Handler(BaseHTTPRequestHandler):
         else:
             self.send_response(404)
 
-    def all_good(func):
+    def success(func):
         def wrapper(self, *args, **kwargs):
             self.send_response(200)
             self.send_header("Content-type", "text/html")
@@ -69,7 +69,7 @@ class Handler(BaseHTTPRequestHandler):
             return func(self, *args, **kwargs)
         return wrapper
 
-    @all_good
+    @success
     def handle_root(self, data):
         self.wfile.write('''
             login with: <a href="/oauth2/google">Google</a>,
@@ -98,7 +98,7 @@ class Handler(BaseHTTPRequestHandler):
         return gz.read()
 
 
-    @all_good
+    @success
     def handle_stackexchange_login(self, data):
         c = Client(token_endpoint="https://stackexchange.com/oauth/access_token",
             resource_endpoint="https://api.stackexchange.com/2.0",
@@ -138,7 +138,7 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
 
-    @all_good
+    @success
     def handle_google_login(self, data):
         c = Client(token_endpoint="https://accounts.google.com/o/oauth2/token",
             resource_endpoint="https://www.googleapis.com/oauth2/v1",
@@ -173,7 +173,7 @@ class Handler(BaseHTTPRequestHandler):
             scope_delim=","))
         self.end_headers()
 
-    @all_good
+    @success
     def handle_facebook_login(self, data):
         c = Client(
             token_endpoint="https://graph.facebook.com/oauth/access_token",
@@ -209,7 +209,7 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
 
-    @all_good
+    @success
     def handle_foursquare_login(self, data):
         c = Client(
             token_endpoint="https://foursquare.com/oauth2/access_token",
@@ -235,7 +235,7 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
 
-    @all_good
+    @success
     def handle_bitly_login(self, data):
         c = Client(token_endpoint="https://api-ssl.bitly.com/oauth/access_token",
             resource_endpoint="https://api-ssl.bitly.com",
@@ -259,7 +259,7 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
 
-    @all_good
+    @success
     def handle_github_login(self, data):
         c = Client(token_endpoint="https://github.com/login/oauth/access_token",
             resource_endpoint="https://api.github.com",
@@ -283,7 +283,7 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
 
-    @all_good
+    @success
     def handle_instagram_login(self, data):
         c = Client(token_endpoint="https://api.instagram.com/oauth/access_token",
             resource_endpoint="https://api.instagram.com/v1",
@@ -307,7 +307,7 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
 
-    @all_good
+    @success
     def handle_deviantart_login(self, data):
         c = Client(
             token_endpoint="https://www.deviantart.com/oauth2/draft15/token",
