@@ -22,50 +22,58 @@ class Client(object):
         self.client_id = client_id
         self.client_secret = client_secret
         self.access_token = None
-        self.access_token_key = "access_token"
+        self.access_token_key = 'access_token'
 
     def auth_uri(self, scope=None, scope_delim=None, state=None, **kwargs):
         """  Builds the auth URI for the authorization endpoint
         """
-        scope_delim = scope_delim and scope_delim or " "
+        scope_delim = scope_delim and scope_delim or ' '
         kwargs.update({
-            "client_id": self.client_id,
-            "response_type": "code",
+            'client_id': self.client_id,
+            'response_type': 'code',
         })
 
         if scope is not None:
-            kwargs["scope"] = scope_delim.join(scope)
+            kwargs['scope'] = scope_delim.join(scope)
 
         if state is not None:
-            kwargs["state"] = state
+            kwargs['state'] = state
 
         if self.redirect_uri is not None:
-            kwargs["redirect_uri"] = self.redirect_uri
+            kwargs['redirect_uri'] = self.redirect_uri
 
-        return "%s?%s" % (self.auth_endpoint, urlencode(kwargs))
+        return '%s?%s' % (self.auth_endpoint, urlencode(kwargs))
 
-    def request_token(self, code=None, grant_type=None, parser=None, **kwargs):
-        """ Request an access token from the token endpoint
+    def request_token(self, parser=None, **kwargs):
+        """ Request an access token from the token endpoint.
+        This is largely a helper method and expects the client code to
+        understand what the server expects. Anything that's passed into
+        ``**kwargs`` will be sent (``urlencode``d) to the endpoint. Client
+        secret and client ID are automatically included, so are not required
+        as kwargs. For example::
+
+            # if requesting access token from auth flow:
+            {
+                'code': rval_from_auth,
+            }
+
+            # if refreshing access token:
+            {
+                'refresh_token': stored_refresh_token,
+                'grant_type': 'refresh_token',
+            }
+
         :param parser: Callback to deal with returned data. Not all providers
                        use JSON.
-        :param grant_type: The grant type of the request. These may be types
-                           such as authorization_code, client_credentials,
-                           refresh_token, etc.
-        :param kwargs: Any other data that should be sent along with the
-                       token request to the token endpoint. For example, when
-                       issuing a request to refresh a token, the refresh_token
-                       param must be sent along with the request.
         """
         kwargs = kwargs and kwargs or {}
 
-        if code is not None:
-            kwargs.update({'code': code})
-
         parser = parser and parser or loads
         kwargs.update({
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "grant_type": grant_type and grant_type or "authorization_code"
+            'client_id': self.client_id,
+            'client_secret': self.client_secret,
+            'grant_type': 'grant_type' in kwargs and kwargs['grant_type'] or \
+                'authorization_code'
         })
         if self.redirect_uri is not None:
             kwargs.update({'redirect_uri': self.redirect_uri})
@@ -97,6 +105,6 @@ class Client(object):
             self.access_token_key: self.access_token
         })
 
-        path = "%s%s?%s" % (self.resource_endpoint, path, urlencode(query))
+        path = '%s%s?%s' % (self.resource_endpoint, path, urlencode(query))
 
         return parser(urlopen(path, data).read())
