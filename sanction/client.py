@@ -4,7 +4,7 @@
 
 from json import loads
 from urllib import urlencode
-from urllib2 import urlopen
+from urllib2 import urlopen, Request
 
 
 class Client(object):
@@ -86,7 +86,8 @@ class Client(object):
 
         assert(self.access_token is not None)
 
-    def request(self, path, query=None, data=None, parser=None):
+    def request(self, path, query=None, data=None, parser=None,
+            use_headers=False):
         """ Request user data from the resource endpoint
         :param path: The path of the resource
         :param query: A dict of parameters to be sent as the request
@@ -101,10 +102,20 @@ class Client(object):
         if query is None:
             query = {}
 
-        query.update({
-            self.access_token_key: self.access_token
-        })
+        request = self._build_request(path, query, data, use_headers)
+        return parser(urlopen(request).read())
 
-        path = '%s%s?%s' % (self.resource_endpoint, path, urlencode(query))
+    def _build_request(self, path, query, data, use_headers):
+        path = '%s%s' % (self.resource_endpoint, path)
+        if use_headers:
+            headers = self._bearer_authorization_headers()
+        else:
+            query.update({
+                self.access_token_key: self.access_token
+            })
+            path = '%s?%s' % (path, urlencode(query))
+            headers = {}
+        return Request(path, data, headers)
 
-        return parser(urlopen(path, data).read())
+    def _bearer_authorization_headers(self):
+        return {'Authorization': 'Bearer %s' % self.access_token}
