@@ -3,8 +3,26 @@
 """
 
 from json import loads
-from urllib import urlencode
-from urllib2 import urlopen
+try:
+    from urllib import urlencode
+    from urllib2 import urlopen
+
+    # monkeypatch httpmessage
+    from httplib import HTTPMessage
+    def get_charset(self):
+        try:
+            data = filter(lambda s: 'Content-Type' in s, self.headers)[0]
+            if 'charset' in data:
+                cs = data[data.index(';') + 1:-2].split('=')[1].lower()
+                return cs
+        except IndexError:
+            pass
+
+        return 'utf-8'
+    HTTPMessage.get_content_charset = get_charset 
+except ImportError:
+    from urllib.parse import urlencode
+    from urllib.request import urlopen
 
 
 class Client(object):
@@ -78,11 +96,13 @@ class Client(object):
         if self.redirect_uri is not None:
             kwargs.update({'redirect_uri': self.redirect_uri})
 
-        resp = parser(urlopen(self.token_endpoint, urlencode(
-            kwargs)).read())
+        msg = urlopen(self.token_endpoint, urlencode(kwargs).encode(
+            'utf-8'))
+        data = parser(msg.read().decode(msg.info().get_content_charset() or
+            'utf-8'))
 
-        for key in resp:
-            setattr(self, key, resp[key])
+        for key in data:
+            setattr(self, key, data[key])
 
         assert(self.access_token is not None)
 
@@ -107,4 +127,6 @@ class Client(object):
 
         path = '%s%s?%s' % (self.resource_endpoint, path, urlencode(query))
 
-        return parser(urlopen(path, data).read())
+        msg = urlopen(path, data)
+        return parser(msg.read().decode(msg.info().get_content_charset()
+            or 'utf-8'))

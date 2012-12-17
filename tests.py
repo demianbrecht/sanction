@@ -1,9 +1,9 @@
 # vim: set ts=4 sw=4 et:
 from unittest import TestCase
-from urlparse import (
-	parse_qsl,
-	urlparse
-)
+try:
+    from urlparse import parse_qsl, urlparse
+except ImportError:
+    from urllib.parse import parse_qsl, urlparse
 
 from sanction.client import Client
 
