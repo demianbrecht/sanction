@@ -7,14 +7,17 @@ import sys, os
 try:
     from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
     from ConfigParser import ConfigParser
-    from urlparse import urlparse, parse_qsl
+    from urlparse import urlparse, urlsplit, urlunsplit, parse_qsl
     from urllib import urlencode
-    from StringIO import StringIO
+    from urllib2 import Request
+    from io import BytesIO 
 except ImportError:
     from http.server import HTTPServer, BaseHTTPRequestHandler
     from configparser import ConfigParser
-    from urllib.parse import urlparse, parse_qsl, urlencode
-    from io import StringIO
+    from urllib.parse import (urlparse, parse_qsl, urlencode,
+        urlunsplit, urlsplit)
+    from io import BytesIO 
+    from urllib.request import Request
 
 from gzip import GzipFile
 from json import loads
@@ -96,7 +99,6 @@ class Handler(BaseHTTPRequestHandler):
             <a href='/oauth2/deviantart'>Deviant Art</a>,
         '''.encode(ENCODING_UTF8))
 
-
     def handle_stackexchange(self, data):
         self.send_response(302)
         c = Client(auth_endpoint='https://stackexchange.com/oauth',
@@ -105,12 +107,10 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Location', c.auth_uri())
         self.end_headers()
 
-
-    def __gunzip(self, data):
-        s = StringIO(data)
+    def _gunzip(self, data):
+        s = BytesIO(data)
         gz = GzipFile(fileobj=s, mode='rb')
         return gz.read()
-
 
     @success
     def handle_stackexchange_login(self, data):
@@ -124,19 +124,18 @@ class Handler(BaseHTTPRequestHandler):
             parser = lambda data: dict(parse_qsl(data)))
 
         self.dump_client(c)
-        data = c.request('/me', qs={
+        data = c.request('/me?{}'.format(urlencode({
             'site': 'stackoverflow.com',
             'key': config['stackexchange.key']
-            }, parser=lambda c: loads(self.__gunzip(c)))['items'][0]
+            })), parser=lambda c: loads(self._gunzip(c).decode(
+                'utf-8')))['items'][0]
 
         self.dump_response(data)
 
-        
     def dump_response(self, data):
         for k in data:
             self.wfile.write('{0}: {1}<br>'.format(k,
                 data[k]).encode(ENCODING_UTF8))
-
 
     def dump_client(self, c):
         for k in c.__dict__:
@@ -153,14 +152,14 @@ class Handler(BaseHTTPRequestHandler):
             scope=config['google.scope'].split(','), access_type='offline'))    
         self.end_headers()
 
-
     @success
     def handle_google_login(self, data):
         c = Client(token_endpoint='https://accounts.google.com/o/oauth2/token',
             resource_endpoint='https://www.googleapis.com/oauth2/v1',
             redirect_uri='http://localhost/login/google',
             client_id=config['google.client_id'],
-            client_secret=config['google.client_secret'])
+            client_secret=config['google.client_secret'],
+            token_transport='headers')
         c.request_token(code=data['code'])
 
         self.dump_client(c)
@@ -171,13 +170,13 @@ class Handler(BaseHTTPRequestHandler):
             rc = Client(token_endpoint=c.token_endpoint,
                 client_id=c.client_id,
                 client_secret=c.client_secret,
-                resource_endpoint=c.resource_endpoint)
+                resource_endpoint=c.resource_endpoint,
+                token_transport='headers')
 
             rc.request_token(grant_type='refresh_token', 
-                refresh_token=c.refresh_token)
+                refresh_token=c.refresh_token, exclude='redirect_uri')
             self.wfile.write('<p>post refresh token:</p>'.encode(ENCODING_UTF8))
             self.dump_client(rc)
-
         
     def handle_facebook(self, data):
         self.send_response(302)
@@ -206,16 +205,15 @@ class Handler(BaseHTTPRequestHandler):
         self.dump_response(d)
 
         try:
-            d = c.request('/me/feed', data=urlencode({
+            d = c.request('/me/feed', data=bytes(urlencode({
                 'message': 'test post from py-sanction'
-            }))
+            }), 'ascii'))
             self.wfile.write(
                 'I posted a message to your wall (in sandbox mode, nobody '
                 'else will see it)'.encode(ENCODING_UTF8))
         except:
             self.wfile.write(
-                'Unable to post to your wall')
-
+                b'Unable to post to your wall')
 
     def handle_foursquare(self, data):
         self.send_response(302)
@@ -225,17 +223,31 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Location', c.auth_uri())
         self.end_headers()
 
-
     @success
     def handle_foursquare_login(self, data):
+        def token_transport(url, access_token, data=None, method=None):
+            parts = urlsplit(url)
+            query = dict(parse_qsl(parts.query))
+            query.update({
+                'oauth_token': access_token
+            })
+            url = urlunsplit((parts.scheme, parts.netloc, parts.path,
+                urlencode(query), parts.fragment))
+            try:
+                req = Request(url, data=data, method=method)
+            except TypeError:
+                req = Request(url, data=data)
+                req.get_method = lambda: method
+            return req
+
         c = Client(
             token_endpoint='https://foursquare.com/oauth2/access_token',
             resource_endpoint='https://api.foursquare.com/v2',
             redirect_uri='http://localhost/login/foursquare',
             client_id=config['foursquare.client_id'],
             client_secret=config['foursquare.client_secret'],
+            token_transport=token_transport
             )
-        c.access_token_key = 'oauth_token'
         c.request_token(code=data['code'])
 
         self.dump_client(c)

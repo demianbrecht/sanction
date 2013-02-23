@@ -1,3 +1,14 @@
+sanction 0.3 (2-21-2013)
+========================
+* Python 3+ support added
+* Updated request to support a full range of HTTP methods (was previously POST
+  and GET
+* Added support for multiple token transport types: HTTP headers, GET params
+  or custom callable
+* Added exclude param to request_token in order to prevent certain fields from
+  token request
+* Removed query param from request. These should now be added to the base url.
+
 sanction 0.1.4 (9-14-2012)
 ==========================
 * Added support for refresh_token

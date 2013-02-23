@@ -5,7 +5,8 @@
 from json import loads
 try:
     from urllib import urlencode
-    from urllib2 import urlopen
+    from urllib2 import Request, urlopen
+    from urlparse import urlsplit, urlunsplit, parse_qsl
 
     # monkeypatch httpmessage
     from httplib import HTTPMessage
@@ -21,8 +22,8 @@ try:
         return 'utf-8'
     HTTPMessage.get_content_charset = get_charset 
 except ImportError:
-    from urllib.parse import urlencode
-    from urllib.request import urlopen
+    from urllib.parse import urlencode, urlsplit, urlunsplit, parse_qsl
+    from urllib.request import Request, urlopen
 
 
 class Client(object):
@@ -31,7 +32,9 @@ class Client(object):
 
     def __init__(self, auth_endpoint=None, token_endpoint=None,
         resource_endpoint=None, client_id=None, client_secret=None,
-        redirect_uri=None):
+        redirect_uri=None, token_transport=None):
+        assert(hasattr(token_transport, '__call__') or 
+            token_transport in ('headers', 'query', None))
 
         self.auth_endpoint = auth_endpoint
         self.token_endpoint = token_endpoint
@@ -40,7 +43,7 @@ class Client(object):
         self.client_id = client_id
         self.client_secret = client_secret
         self.access_token = None
-        self.access_token_key = 'access_token'
+        self.token_transport = token_transport or 'query'
 
     def auth_uri(self, scope=None, scope_delim=None, state=None, **kwargs):
         """  Builds the auth URI for the authorization endpoint
@@ -62,7 +65,7 @@ class Client(object):
 
         return '%s?%s' % (self.auth_endpoint, urlencode(kwargs))
 
-    def request_token(self, parser=None, **kwargs):
+    def request_token(self, parser=None, exclude=None, **kwargs):
         """ Request an access token from the token endpoint.
         This is largely a helper method and expects the client code to
         understand what the server expects. Anything that's passed into
@@ -81,10 +84,16 @@ class Client(object):
                 'grant_type': 'refresh_token',
             }
 
+        :param exclude: An iterable of fields to exclude from the ``POST``
+                        data. This is useful for fields such as ``redirect_uri``
+                        that are required during initial code/token exchange,
+                        but will cause errors with some providers when
+                        exchanging refresh tokens for new access tokens.
         :param parser: Callback to deal with returned data. Not all providers
                        use JSON.
         """
         kwargs = kwargs and kwargs or {}
+        exclude = exclude or {}
 
         parser = parser and parser or loads
         kwargs.update({
@@ -93,7 +102,7 @@ class Client(object):
             'grant_type': 'grant_type' in kwargs and kwargs['grant_type'] or \
                 'authorization_code'
         })
-        if self.redirect_uri is not None:
+        if self.redirect_uri is not None and 'redirect_uri' not in exclude:
             kwargs.update({'redirect_uri': self.redirect_uri})
 
         msg = urlopen(self.token_endpoint, urlencode(kwargs).encode(
@@ -106,27 +115,66 @@ class Client(object):
 
         assert(self.access_token is not None)
 
-    def request(self, path, query=None, data=None, parser=None):
+    def request(self, url, method=None, data=None, parser=None): 
         """ Request user data from the resource endpoint
-        :param path: The path of the resource
-        :param query: A dict of parameters to be sent as the request
-                      querystring
+        :param url: The path to the resource and querystring if required
+        :param method: HTTP method. Defaults to ``GET`` unless data is not None
+                       in which case it defaults to ``POST``
         :param data: Data to be POSTed to the resource endpoint
         :param parser: Parser callback to deal with the returned data. Defaults
                        to ``json.loads`.`
         """
         assert(self.access_token is not None)
-        parser = parser and parser or loads
+        parser = parser or loads
 
-        if query is None:
-            query = {}
+        if not method:
+            method = 'GET' if not data else 'POST'
 
-        query.update({
-            self.access_token_key: self.access_token
-        })
+        if not hasattr(self.token_transport, '__call__'):
+            transport = globals()['_transport_{}'.format(self.token_transport)]
+        else:
+            transport = self.token_transport
 
-        path = '%s%s?%s' % (self.resource_endpoint, path, urlencode(query))
+        req = transport('{}{}'.format(self.resource_endpoint, 
+            url), self.access_token, data=data, method=method)
 
-        msg = urlopen(path, data)
-        return parser(msg.read().decode(msg.info().get_content_charset()
-            or 'utf-8'))
+        resp = urlopen(req)
+        data = resp.read()
+        try:
+            # try to decode it first using either the content charset, falling
+            # back to utf8
+            return parser(data.decode(resp.info().get_content_charset() or
+                'utf-8'))
+        except UnicodeDecodeError:
+            # if we've gotten a decoder error, the calling code better know how
+            # to deal with it. some providers (i.e. stackexchange) like to gzip
+            # their responses, so this allows the client code to handle it
+            # directly.
+            return parser(data)
+
+def _transport_headers(url, access_token, data=None, method=None):
+    try:
+        req = Request(url, data=data, method=method)
+    except TypeError:
+        req = Request(url, data=data)
+        req.get_method = lambda: method
+
+    req.headers.update({
+        'Authorization': 'Bearer {}'.format(access_token)
+    })
+    return req
+
+def _transport_query(url, access_token, data=None, method=None):
+    parts = urlsplit(url)
+    query = dict(parse_qsl(parts.query))
+    query.update({
+        'access_token': access_token
+    })
+    url = urlunsplit((parts.scheme, parts.netloc, parts.path,
+        urlencode(query), parts.fragment))
+    try:
+        req = Request(url, data=data, method=method)
+    except TypeError:
+        req = Request(url, data=data)
+        req.get_method = lambda: method
+    return req
