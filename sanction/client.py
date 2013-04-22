@@ -1,8 +1,10 @@
-# vim: set ts=4 sw=4 et:
+# vim: set ts=4 sw=)
 """ OAuth 2.0 client librar
 """
 
 from json import loads
+from datetime import datetime, timedelta
+from time import mktime
 try:
     from urllib import urlencode
     from urllib2 import Request, urlopen
@@ -44,6 +46,8 @@ class Client(object):
         self.client_secret = client_secret
         self.access_token = None
         self.token_transport = token_transport or 'query'
+        self.token_expires = -1
+        self.refresh_token = None
 
     def auth_uri(self, scope=None, scope_delim=None, state=None, **kwargs):
         """  Builds the auth URI for the authorization endpoint
@@ -113,7 +117,18 @@ class Client(object):
         for key in data:
             setattr(self, key, data[key])
 
+        # expires_in is RFC-compliant. if anything else is used by the
+        # provider, token_expires must be set manually
+        if hasattr(self, 'expires_in'):
+            self.token_expires = mktime((datetime.utcnow() + timedelta(
+                seconds=self.expires_in)).timetuple())
+
         assert(self.access_token is not None)
+
+    def refresh(self):
+        assert self.refresh_token is not None
+        self.request_token(refresh_token=self.refresh_token,
+            grant_type='refresh_token', exclude=('redirect_uri',))
 
     def request(self, url, method=None, data=None, parser=None): 
         """ Request user data from the resource endpoint
