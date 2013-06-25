@@ -109,10 +109,10 @@ class Client(object):
         if self.redirect_uri is not None and 'redirect_uri' not in exclude:
             kwargs.update({'redirect_uri': self.redirect_uri})
 
-        msg = urlopen(self.token_endpoint, urlencode(kwargs).encode(
-            'utf-8'))
+        msg = urlopen(self.token_endpoint, 
+                      urlencode(kwargs).encode('utf-8'))
         data = parser(msg.read().decode(msg.info().get_content_charset() or
-            'utf-8'))
+                                        'utf-8'))
 
         for key in data:
             setattr(self, key, data[key])
@@ -130,7 +130,7 @@ class Client(object):
         self.request_token(refresh_token=self.refresh_token,
             grant_type='refresh_token', exclude=('redirect_uri',))
 
-    def request(self, url, method=None, data=None, parser=None): 
+    def request(self, url, method=None, headers=None, data=None, parser=None): 
         """ Request user data from the resource endpoint
         :param url: The path to the resource and querystring if required
         :param method: HTTP method. Defaults to ``GET`` unless data is not None
@@ -151,7 +151,7 @@ class Client(object):
             transport = self.token_transport
 
         req = transport('{}{}'.format(self.resource_endpoint, 
-            url), self.access_token, data=data, method=method)
+            url), self.access_token, headers=headers, data=data, method=method)
 
         resp = urlopen(req)
         data = resp.read()
@@ -167,7 +167,7 @@ class Client(object):
             # directly.
             return parser(data)
 
-def _transport_headers(url, access_token, data=None, method=None):
+def _transport_headers(url, access_token, headers=None, data=None, method=None):
     try:
         req = Request(url, data=data, method=method)
     except TypeError:
@@ -175,11 +175,16 @@ def _transport_headers(url, access_token, data=None, method=None):
         req.get_method = lambda: method
 
     req.headers.update({
-        'Authorization': 'Bearer {}'.format(access_token)
-    })
+            'Authorization': 'Bearer {}'.format(access_token)
+            })
+
+    if headers is not None:
+        for header, val in headers.items():
+            req.headers.update( { header : val } )
+
     return req
 
-def _transport_query(url, access_token, data=None, method=None):
+def _transport_query(url, access_token, headers=None, data=None, method=None):
     parts = urlsplit(url)
     query = dict(parse_qsl(parts.query))
     query.update({
