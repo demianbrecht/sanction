@@ -1,6 +1,4 @@
 # vim: set ts=4 sw=)
-""" OAuth 2.0 client library
-"""
 
 from json import loads
 from datetime import datetime, timedelta
@@ -23,7 +21,7 @@ try:
 
         return 'utf-8'
     HTTPMessage.get_content_charset = get_charset 
-except ImportError:
+except ImportError: # pragma: no cover
     from urllib.parse import urlencode, urlsplit, urlunsplit, parse_qsl
     from urllib.request import Request, urlopen
 
@@ -34,10 +32,10 @@ class Client(object):
 
     def __init__(self, auth_endpoint=None, token_endpoint=None,
         resource_endpoint=None, client_id=None, client_secret=None,
-        redirect_uri=None, token_transport=None):
+        token_transport=None):
         """ Instantiates a `Client` to authorize and authenticate a user
 
-        :param auth_endpoint: The authorization endpoint as given by the
+        :param auth_endpoint: The authorization endpoint as issued by the
                               provider. This is where the user should be
                               redirect to provider authorization for your
                               application.
@@ -45,22 +43,25 @@ class Client(object):
                                exchanged for an access token.
         :param resource_endpoint: The base url to use when accessing resources
                                   via `Client.request`.
+        :param client_id: The client ID as issued by the provider.
+        :param client_secret: The client secret as issued by the provider. This
+                              must not be shared.
         """
-        assert(hasattr(token_transport, '__call__') or 
-            token_transport in ('headers', 'query', None))
+        assert token_transport is None or hasattr(token_transport, '__call__')
 
         self.auth_endpoint = auth_endpoint
         self.token_endpoint = token_endpoint
         self.resource_endpoint = resource_endpoint
-        self.redirect_uri = redirect_uri
         self.client_id = client_id
         self.client_secret = client_secret
         self.access_token = None
-        self.token_transport = token_transport or 'query'
+        self.token_transport = token_transport or transport_query
         self.token_expires = -1
         self.refresh_token = None
 
-    def auth_uri(self, scope=None, scope_delim=None, state=None, **kwargs):
+    def auth_uri(self, redirect_uri=None, scope=None, scope_delim=None, 
+        state=None, **kwargs):
+
         """  Builds the auth URI for the authorization endpoint
 
         :param scope: (optional) The `scope` parameter to pass for
@@ -74,7 +75,6 @@ class Client(object):
         :param **kwargs: Any other querystring parameters to be passed to the
                          provider.
         """
-        scope_delim = scope_delim and scope_delim or ' '
         kwargs.update({
             'client_id': self.client_id,
             'response_type': 'code',
@@ -86,12 +86,12 @@ class Client(object):
         if state is not None:
             kwargs['state'] = state
 
-        if self.redirect_uri is not None:
-            kwargs['redirect_uri'] = self.redirect_uri
+        if redirect_uri is not None:
+            kwargs['redirect_uri'] = redirect_uri
 
         return '%s?%s' % (self.auth_endpoint, urlencode(kwargs))
 
-    def request_token(self, parser=None, exclude=None, **kwargs):
+    def request_token(self, parser=None, redirect_uri=None, **kwargs):
         """ Request an access token from the token endpoint.
         This is largely a helper method and expects the client code to
         understand what the server expects. Anything that's passed into
@@ -110,16 +110,10 @@ class Client(object):
                 'grant_type': 'refresh_token',
             }
 
-        :param exclude: An iterable of fields to exclude from the ``POST``
-                        data. This is useful for fields such as ``redirect_uri``
-                        that are required during initial code/token exchange,
-                        but will cause errors with some providers when
-                        exchanging refresh tokens for new access tokens.
         :param parser: Callback to deal with returned data. Not all providers
                        use JSON.
         """
         kwargs = kwargs and kwargs or {}
-        exclude = exclude or {}
 
         parser = parser or _default_parser
         kwargs.update({
@@ -128,8 +122,8 @@ class Client(object):
             'grant_type': 'grant_type' in kwargs and kwargs['grant_type'] or \
                 'authorization_code'
         })
-        if self.redirect_uri is not None and 'redirect_uri' not in exclude:
-            kwargs.update({'redirect_uri': self.redirect_uri})
+        if redirect_uri is not None:
+            kwargs.update({'redirect_uri': redirect_uri})
 
         msg = urlopen(self.token_endpoint, urlencode(kwargs).encode(
             'utf-8'))
@@ -147,9 +141,9 @@ class Client(object):
 
     def refresh(self):
         self.request_token(refresh_token=self.refresh_token,
-            grant_type='refresh_token', exclude=('redirect_uri',))
+            grant_type='refresh_token')
 
-    def request(self, url, method=None, data=None, parser=None): 
+    def request(self, url, method=None, data=None, headers=None, parser=None): 
         """ Request user data from the resource endpoint
         :param url: The path to the resource and querystring if required
         :param method: HTTP method. Defaults to ``GET`` unless data is not None
@@ -158,18 +152,14 @@ class Client(object):
         :param parser: Parser callback to deal with the returned data. Defaults
                        to ``json.loads`.`
         """
+        assert self.access_token is not None
         parser = parser or loads 
 
         if not method:
             method = 'GET' if not data else 'POST'
 
-        if not hasattr(self.token_transport, '__call__'):
-            transport = globals()['_transport_{}'.format(self.token_transport)]
-        else:
-            transport = self.token_transport
-
-        req = transport('{}{}'.format(self.resource_endpoint, 
-            url), self.access_token, data=data, method=method)
+        req = self.token_transport('{}{}'.format(self.resource_endpoint, 
+            url), self.access_token, data=data, method=method, headers=headers)
 
         resp = urlopen(req)
         data = resp.read()
@@ -185,19 +175,23 @@ class Client(object):
             # directly.
             return parser(data)
 
-def _transport_headers(url, access_token, data=None, method=None):
+
+def transport_headers(url, access_token, data=None, method=None, headers=None):
     try:
         req = Request(url, data=data, method=method)
     except TypeError:
         req = Request(url, data=data)
         req.get_method = lambda: method
 
-    req.headers.update({
-        'Authorization': 'Bearer {}'.format(access_token)
-    })
+    add_headers = {'Authorization': 'Bearer {}'.format(access_token)}
+    if headers is not None:
+        add_headers.update(headers)
+
+    req.headers.update(add_headers)
     return req
 
-def _transport_query(url, access_token, data=None, method=None):
+
+def transport_query(url, access_token, data=None, method=None, headers=None):
     parts = urlsplit(url)
     query = dict(parse_qsl(parts.query))
     query.update({
@@ -210,7 +204,12 @@ def _transport_query(url, access_token, data=None, method=None):
     except TypeError:
         req = Request(url, data=data)
         req.get_method = lambda: method
+
+    if headers is not None:
+        req.headers.update(headers)
+
     return req
+
 
 def _default_parser(data):
     try:

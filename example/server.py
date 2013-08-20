@@ -25,7 +25,7 @@ from json import loads
 # so we can run without installing
 sys.path.append(os.path.abspath('../'))
 
-from sanction.client import Client
+from sanction import Client
 
 ENCODING_UTF8 = 'utf-8'
 
@@ -149,7 +149,7 @@ class Handler(BaseHTTPRequestHandler):
             client_id=config['google.client_id'],
             redirect_uri='http://localhost/login/google')
         self.send_header('Location', c.auth_uri(
-            scope=config['google.scope'].split(','), access_type='offline'))    
+            scope=config['google.scope'], access_type='offline'))    
         self.end_headers()
 
     @success
@@ -184,7 +184,7 @@ class Handler(BaseHTTPRequestHandler):
                 client_id=config['facebook.client_id'],
                 redirect_uri='http://localhost/login/facebook')
         self.send_header('Location', c.auth_uri(
-            scope=config['facebook.scope'].split(','),
+            scope=config['facebook.scope'],
             scope_delim=','))
         self.end_headers()
 

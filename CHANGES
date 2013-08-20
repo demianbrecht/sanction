@@ -1,0 +1,40 @@
+sanction 0.4 (8-21-2013)
+==========================
+* Breaking: token_transport parameter of Client.__init__ no longer accepts
+  strings (which was weird to begin with). It only accepts callables.
+  transport_headers and transport_query have been made public (well, the underscore
+  prefix has been removed) in light of this.
+* Breaking: scope is now expected to be formatted how the provider expects
+  it. scope_delim has been removed from auth_uri in order to simplify it. This
+  means that your providers' scope should be set accordingly: i.e. Facebook
+  may be 'foo,bar' while Google would be 'foo bar'.
+* Breaking: removed redirect_uri from Client.__init__ (didn't make sense to
+  be there. This has been added to auth_uri and request_token.
+* Deprecation: sanction.client.Client has been deprecated in favor of 
+  sanction.Client. The deprecated version will likely be removed within 
+  the next couple minor revisions.
+* Feature: Added headers param to request
+* Brought unit tests up to 100% coverage (yay!)
+* Sphinx-ified the docs, added to RTD
+
+sanction 0.3.1 (4-8-2013)
+=========================
+* Added refresh_token, defaulting to None instead of dynamically adding it
+  to the client instance
+
+sanction 0.3 (2-21-2013)
+========================
+* Python 3+ support added
+* Updated request to support a full range of HTTP methods (was previously POST
+  and GET
+* Added support for multiple token transport types: HTTP headers, GET params
+  or custom callable
+* Added exclude param to request_token in order to prevent certain fields from
+  token request
+* Removed query param from request. These should now be added to the base url.
+
+sanction 0.1.4 (9-14-2012)
+==========================
+* Added support for refresh_token
+* Removed check for endpoint errors in request_token. Client code should 
+  deal with that before calling request_token.

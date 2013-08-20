@@ -1,3 +1,11 @@
+.. sanction documentation master file, created by
+   sphinx-quickstart on Tue Aug 20 07:22:31 2013.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+sanction
+========
+
 .. image:: https://secure.travis-ci.org/demianbrecht/sanction.png?branch=master
    :target: http://travis-ci.org/#!/demianbrecht/sanction
 
@@ -109,8 +117,13 @@ Authorization Request
 The next step is to redirect the user agent to the provider's authentication/
 authorization uri (continuation from previous code block)::
 
-    scope_req = ("scope1","scope2",)
+    scope_req = 'scope1,scope2'
     my_redirect(c.auth_uri(scope_req))
+
+:note: (New in 0.4) The scope is assumed to be consistent with the expectations
+       of the provider. For example, scope being passed to Facebook should be
+       a single string with comma-delimited entities while Google should be
+       delimited by spaces (i.e. Facebook: ``scope_req = 'scope1,scope2'``).
 
 You can also elect to use the optional ``state`` parameter to pass a CSRF token
 that will be included if the provider's response::
@@ -131,6 +144,13 @@ param. In order to request an access token from the provider, you must
 request an access token from the provider::
 
     c.request_token(response_dict)
+
+
+The default parser (``sanction._default_parser``) will attempt to decode JSON,
+followed by an attempt to parse querystring-formatted data (i.e. access token
+data returned by Facebook). If the provider you're working with has a different
+requirement, you can use the ``parser`` parameter of ``request_token`` to pass
+another callable that will be responsible for decoding the returned data.
 
 
 Refreshing Access Tokens
@@ -161,6 +181,13 @@ If the provider has deviated from the OAuth2 spec and the response isn't JSON
     c.request("/userinfo", parser=lambda c: dosomething(c))
 
 
+API
+```
+
+.. automodule:: sanction
+   :members: 
+
+
 Notes
 -----
 
@@ -177,4 +204,12 @@ Thanks
 
 .. _`Jake Basile`: https://github.com/jakebasile
 .. _`Alec Taylor`: https://github.com/AlecTaylor
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
 
