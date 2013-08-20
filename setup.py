@@ -2,14 +2,14 @@ import os
 from setuptools import setup
 
 here = os.path.abspath(os.path.dirname(__file__))
-README = open(os.path.join(here, "README.rst")).read()
-README = README + open(os.path.join(here, "CHANGES.txt")).read()
+README = open(os.path.join(here, "README")).read()
+README = README + open(os.path.join(here, "CHANGES")).read()
 
 requires = []
 
 setup(name="sanction",
 	keywords="python,oauth2",
-    version="0.3.1",
+    version="0.4",
     description="A simple, lightweight OAuth2 client",
     author="Demian Brecht",
     author_email="demianbrecht@gmail.com",
