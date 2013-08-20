@@ -1,5 +1,5 @@
 # vim: set ts=4 sw=)
-""" OAuth 2.0 client librar
+""" OAuth 2.0 client library
 """
 
 from json import loads
@@ -35,6 +35,17 @@ class Client(object):
     def __init__(self, auth_endpoint=None, token_endpoint=None,
         resource_endpoint=None, client_id=None, client_secret=None,
         redirect_uri=None, token_transport=None):
+        """ Instantiates a `Client` to authorize and authenticate a user
+
+        :param auth_endpoint: The authorization endpoint as given by the
+                              provider. This is where the user should be
+                              redirect to provider authorization for your
+                              application.
+        :param token_endpoint: The endpoint against which a `code` will be
+                               exchanged for an access token.
+        :param resource_endpoint: The base url to use when accessing resources
+                                  via `Client.request`.
+        """
         assert(hasattr(token_transport, '__call__') or 
             token_transport in ('headers', 'query', None))
 
@@ -51,6 +62,17 @@ class Client(object):
 
     def auth_uri(self, scope=None, scope_delim=None, state=None, **kwargs):
         """  Builds the auth URI for the authorization endpoint
+
+        :param scope: (optional) The `scope` parameter to pass for
+                      authorization. The format should match that expected by
+                      the provider (i.e. Facebook expects comma-delimited,
+                      while Google expects space-delimited)
+        :param state: (optional) The `state` parameter to pass for
+                      authorization. If the provider follows the OAuth 2.0
+                      spec, this will be returned to your `redirect_uri` after
+                      authorization. Generally used for CSRF protection.
+        :param **kwargs: Any other querystring parameters to be passed to the
+                         provider.
         """
         scope_delim = scope_delim and scope_delim or ' '
         kwargs.update({
@@ -59,7 +81,7 @@ class Client(object):
         })
 
         if scope is not None:
-            kwargs['scope'] = scope_delim.join(scope)
+            kwargs['scope'] = scope
 
         if state is not None:
             kwargs['state'] = state
@@ -99,7 +121,7 @@ class Client(object):
         kwargs = kwargs and kwargs or {}
         exclude = exclude or {}
 
-        parser = parser and parser or loads
+        parser = parser or _default_parser
         kwargs.update({
             'client_id': self.client_id,
             'client_secret': self.client_secret,
@@ -123,10 +145,7 @@ class Client(object):
             self.token_expires = mktime((datetime.utcnow() + timedelta(
                 seconds=self.expires_in)).timetuple())
 
-        assert(self.access_token is not None)
-
     def refresh(self):
-        assert self.refresh_token is not None
         self.request_token(refresh_token=self.refresh_token,
             grant_type='refresh_token', exclude=('redirect_uri',))
 
@@ -139,8 +158,7 @@ class Client(object):
         :param parser: Parser callback to deal with the returned data. Defaults
                        to ``json.loads`.`
         """
-        assert(self.access_token is not None)
-        parser = parser or loads
+        parser = parser or loads 
 
         if not method:
             method = 'GET' if not data else 'POST'
@@ -193,3 +211,9 @@ def _transport_query(url, access_token, data=None, method=None):
         req = Request(url, data=data)
         req.get_method = lambda: method
     return req
+
+def _default_parser(data):
+    try:
+        return loads(data)
+    except ValueError:
+        return dict(parse_qsl(data))

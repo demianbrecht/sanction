@@ -1,69 +1,131 @@
 # vim: set ts=4 sw=4 et:
+import json
+import zlib
+
+from functools import wraps
+from httplib import HTTPMessage
 from unittest import TestCase
+from uuid import uuid4
 try:
+    from urllib2 import addinfourl
     from urlparse import parse_qsl, urlparse
+    from StringIO import StringIO
 except ImportError:
     from urllib.parse import parse_qsl, urlparse
+    from io import StringIO
 
-from sanction.client import Client
+from mock import patch
 
-auth_endpoint = "http://example.com"
-token_endpoint = "http://example.com/token"
-resource_endpoint = "http://example.com/resource"
-client_id = "client_id"
-client_secret = "client_secret"
-redirect_uri = "redirect_uri"
+from sanction import Client
 
 
-class SanctionTests(TestCase):
+AUTH_ENDPOINT = "http://example.com"
+TOKEN_ENDPOINT = "http://example.com/token"
+RESOURCE_ENDPOINT = "http://example.com/resource"
+CLIENT_ID = "client_id"
+CLIENT_SECRET = "client_secret"
+REDIRECT_URI = "redirect_uri"
+SCOPE = 'foo,bar'
+STATE = str(uuid4())
+ACCESS_TOKEN = 'access_token'
+
+
+def with_patched_client(data, code=200, headers=None):
+    def wrapper(fn):
+        @wraps(fn)
+        def inner(*args, **kwargs):
+            with patch('sanction.urlopen') as mock_urlopen:
+                mock_urlopen.return_value = addinfourl(StringIO(data), 
+                    HTTPMessage(StringIO(headers or '')), '', code=code)
+                fn(*args, **kwargs)
+        return inner
+    return wrapper
+
+
+class TestClient(TestCase):
+    def setUp(self):
+        self.client = Client(auth_endpoint=AUTH_ENDPOINT,
+            token_endpoint=TOKEN_ENDPOINT,
+            resource_endpoint=RESOURCE_ENDPOINT,
+            client_id=CLIENT_ID,
+            redirect_uri=REDIRECT_URI)
+
     def test_init(self):
-        c = Client(
-            auth_endpoint = auth_endpoint,
-            token_endpoint = token_endpoint,
-            resource_endpoint = resource_endpoint,
-            client_id = client_id,
-            client_secret = client_secret,
-            redirect_uri = redirect_uri)
+        map(lambda c: self.assertEqual(*c),
+            ((self.client.auth_endpoint, AUTH_ENDPOINT),
+            (self.client.token_endpoint, TOKEN_ENDPOINT),
+            (self.client.resource_endpoint, RESOURCE_ENDPOINT),
+            (self.client.client_id, CLIENT_ID),
+            (self.client.redirect_uri, REDIRECT_URI),))
 
-        self.assertEquals(c.auth_endpoint, auth_endpoint)
-        self.assertEquals(c.token_endpoint, token_endpoint)
-        self.assertEquals(c.resource_endpoint, resource_endpoint)
-        self.assertEquals(c.client_id, client_id)
-        self.assertEquals(c.client_secret, client_secret)
-        self.assertEquals(c.redirect_uri, redirect_uri)
+    def test_auth_uri(self):
+        parsed = urlparse(self.client.auth_uri())
+        qs = dict(parse_qsl(parsed.query))
 
-    def test_get_auth_uri(self):
-        c = Client(auth_endpoint = auth_endpoint,
-            client_id = client_id)
-        uri = c.auth_uri()
+        map(lambda c: self.assertEqual(*c),
+            ((qs['redirect_uri'], REDIRECT_URI),
+            (qs['response_type'], 'code'),
+            (qs['client_id'], CLIENT_ID)))
 
-        o = urlparse(uri)
-        self.assertEquals(o.netloc, "example.com")
-        d = dict(parse_qsl(o.query))
+        parsed = urlparse(self.client.auth_uri(scope=SCOPE))
+        qs = dict(parse_qsl(parsed.query))
 
-        self.assertEquals(d["response_type"], "code")
-        self.assertEquals(d["client_id"], client_id)
+        self.assertEqual(qs['scope'], SCOPE)
 
-    def test_request_token(self):
-        c = Client(token_endpoint=token_endpoint)
+        parsed = urlparse(self.client.auth_uri(state=STATE))
+        qs = dict(parse_qsl(parsed.query))
 
-        try:
-            c.request_token()
-            self.fail()
-        except:
-            pass
+        self.assertEqual(qs['state'], STATE)
 
-    def test_facebook_client_credentials(self):
-        c = Client(
-            token_endpoint="https://graph.facebook.com/oauth/access_token",
-            resource_endpoint="https://graph.facebook.com",
-            client_id="285809954824916",
-            client_secret="d985f6a3ecaffd11d61b3cd026b8753a")
+    @with_patched_client(json.dumps({
+        'access_token':'test_token',
+        'expires_in': 300,
+    }))
+    def test_request_token_json(self):
+        self.client.request_token()
+        self.assertEqual(self.client.access_token, 'test_token')
 
-        self.assertEquals(c.access_token, None)
-        c.request_token(parser=lambda data: dict(parse_qsl(data)),
-            grant_type="client_credentials")
-        self.assertIsNotNone(c.access_token)
+    @with_patched_client('access_token=test_token')
+    def test_request_token_url(self):
+        self.client.request_token()
+        self.assertEqual(self.client.access_token, 'test_token')
 
-        data = c.request("/app")
-        self.assertEquals(data["name"], "sanction")
+    @with_patched_client(json.dumps({
+        'access_token': 'refreshed_token',
+    }))
+    def test_refresh_token(self):
+        self.client.refresh_token = 'refresh_token'
+        self.client.refresh()
+        self.assertEqual(self.client.access_token, 'refreshed_token')
+
+    @with_patched_client(json.dumps({
+        'userid': 1234
+    }))
+    def test_request(self):
+        data = self.client.request('/foo')
+        self.assertEqual(data['userid'], 1234)
+
+    @with_patched_client(zlib.compress(json.dumps({
+        'userid': 1234
+    })))
+    def test_request_custom_parser(self):
+        def _decompress(buf):
+            return json.loads(zlib.decompress(buf))
+
+        data = self.client.request('/foo', parser=_decompress)
+        self.assertEqual(data['userid'], 1234)
+
+    @with_patched_client(json.dumps({
+        'userid': 1234
+    }))
+    def test_request_transport_headers(self):
+        self.client.token_transport = 'headers'
+        data = self.client.request('/foo')
+        self.assertEqual(data['userid'], 1234)
+
+    @with_patched_client(json.dumps({
+        'userid': 1234
+    }), headers='Content-Type: text/html; charset=utf-8')
+    def test_request_with_charset(self):
+        data = self.client.request('/foo')
+        self.assertEqual(data['userid'], 1234)

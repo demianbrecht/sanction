@@ -1,7 +1,7 @@
 .PHONY: test, lint, example
 
 test:
-	nosetests -s --pdb --with-coverage --cover-package=sanction 
+	nosetests -s --with-coverage --cover-package=sanction 
 
 lint:
 	pylint sanction
