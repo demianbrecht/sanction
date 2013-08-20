@@ -25,7 +25,7 @@ from json import loads
 # so we can run without installing
 sys.path.append(os.path.abspath('../'))
 
-from sanction import Client
+from sanction import Client, transport_headers
 
 ENCODING_UTF8 = 'utf-8'
 
@@ -57,8 +57,6 @@ class Handler(BaseHTTPRequestHandler):
         '/oauth2/facebook': 'handle_facebook',
         '/login/foursquare': 'handle_foursquare_login',
         '/oauth2/foursquare': 'handle_foursquare',
-        '/login/bitly': 'handle_bitly_login',
-        '/oauth2/bitly': 'handle_bitly',
         '/login/github': 'handle_github_login',
         '/oauth2/github': 'handle_github',
         '/login/instagram': 'handle_instagram_login',
@@ -95,16 +93,15 @@ class Handler(BaseHTTPRequestHandler):
             <a href='/oauth2/stackexchange'>Stack Exchange</a>,
             <a href='/oauth2/instagram'>Instagram</a>,
             <a href='/oauth2/foursquare'>Foursquare</a>,
-            <a href='/oauth2/bitly'>Bitly</a>,
             <a href='/oauth2/deviantart'>Deviant Art</a>,
         '''.encode(ENCODING_UTF8))
 
     def handle_stackexchange(self, data):
         self.send_response(302)
         c = Client(auth_endpoint='https://stackexchange.com/oauth',
-            client_id=config['stackexchange.client_id'],
-            redirect_uri='http://localhost/login/stackexchange')
-        self.send_header('Location', c.auth_uri())
+            client_id=config['stackexchange.client_id'])
+        self.send_header('Location', c.auth_uri(
+            redirect_uri='http://localhost/login/stackexchange'))
         self.end_headers()
 
     def _gunzip(self, data):
@@ -116,12 +113,12 @@ class Handler(BaseHTTPRequestHandler):
     def handle_stackexchange_login(self, data):
         c = Client(token_endpoint='https://stackexchange.com/oauth/access_token',
             resource_endpoint='https://api.stackexchange.com/2.0',
-            redirect_uri='http://localhost/login/stackexchange',
             client_id=config['stackexchange.client_id'],
             client_secret=config['stackexchange.client_secret'])
 
         c.request_token(code=data['code'],
-            parser = lambda data: dict(parse_qsl(data)))
+            parser = lambda data: dict(parse_qsl(data)),
+            redirect_uri='http://localhost/login/stackexchange')
 
         self.dump_client(c)
         data = c.request('/me?{}'.format(urlencode({
@@ -146,21 +143,21 @@ class Handler(BaseHTTPRequestHandler):
     def handle_google(self, data):
         self.send_response(302)
         c = Client(auth_endpoint='https://accounts.google.com/o/oauth2/auth',
-            client_id=config['google.client_id'],
-            redirect_uri='http://localhost/login/google')
+            client_id=config['google.client_id'])
         self.send_header('Location', c.auth_uri(
-            scope=config['google.scope'], access_type='offline'))    
+            scope=config['google.scope'], access_type='offline',
+            redirect_uri='http://localhost/login/google'))
         self.end_headers()
 
     @success
     def handle_google_login(self, data):
         c = Client(token_endpoint='https://accounts.google.com/o/oauth2/token',
             resource_endpoint='https://www.googleapis.com/oauth2/v1',
-            redirect_uri='http://localhost/login/google',
             client_id=config['google.client_id'],
             client_secret=config['google.client_secret'],
-            token_transport='headers')
-        c.request_token(code=data['code'])
+            token_transport=transport_headers)
+        c.request_token(code=data['code'],
+            redirect_uri='http://localhost/login/google')
 
         self.dump_client(c)
         data = c.request('/userinfo')
@@ -174,18 +171,18 @@ class Handler(BaseHTTPRequestHandler):
                 token_transport='headers')
 
             rc.request_token(grant_type='refresh_token', 
-                refresh_token=c.refresh_token, exclude='redirect_uri')
+                refresh_token=c.refresh_token)
             self.wfile.write('<p>post refresh token:</p>'.encode(ENCODING_UTF8))
             self.dump_client(rc)
         
     def handle_facebook(self, data):
         self.send_response(302)
         c = Client(auth_endpoint='https://www.facebook.com/dialog/oauth',
-                client_id=config['facebook.client_id'],
-                redirect_uri='http://localhost/login/facebook')
+                client_id=config['facebook.client_id'])
         self.send_header('Location', c.auth_uri(
             scope=config['facebook.scope'],
-            scope_delim=','))
+            redirect_uri='http://localhost/login/facebook'))
+            
         self.end_headers()
 
     @success
@@ -193,12 +190,11 @@ class Handler(BaseHTTPRequestHandler):
         c = Client(
             token_endpoint='https://graph.facebook.com/oauth/access_token',
             resource_endpoint='https://graph.facebook.com',
-            redirect_uri='http://localhost/login/facebook',
             client_id=config['facebook.client_id'],
             client_secret=config['facebook.client_secret'])
 
         c.request_token(code=data['code'],
-            parser=lambda data: dict(parse_qsl(data)))
+            redirect_uri='http://localhost/login/facebook')
 
         self.dump_client(c)
         d = c.request('/me')
@@ -218,9 +214,9 @@ class Handler(BaseHTTPRequestHandler):
     def handle_foursquare(self, data):
         self.send_response(302)
         c = Client(auth_endpoint='https://foursquare.com/oauth2/authenticate',
-                client_id=config['foursquare.client_id'],
-                redirect_uri='http://localhost/login/foursquare')
-        self.send_header('Location', c.auth_uri())
+                client_id=config['foursquare.client_id'])
+        self.send_header('Location', c.auth_uri(
+            redirect_uri='http://localhost/login/foursquare'))
         self.end_headers()
 
     @success
@@ -243,48 +239,24 @@ class Handler(BaseHTTPRequestHandler):
         c = Client(
             token_endpoint='https://foursquare.com/oauth2/access_token',
             resource_endpoint='https://api.foursquare.com/v2',
-            redirect_uri='http://localhost/login/foursquare',
             client_id=config['foursquare.client_id'],
             client_secret=config['foursquare.client_secret'],
             token_transport=token_transport
             )
-        c.request_token(code=data['code'])
+        c.request_token(code=data['code'],
+            redirect_uri='http://localhost/login/foursquare')
 
         self.dump_client(c)
         d = c.request('/users/24700343')
         self.dump_response(d)
 
 
-    def handle_bitly(self, data):
-        self.send_response(302)
-        c = Client(auth_endpoint='https://bitly.com/oauth/authorize',
-                client_id=config['bitly.client_id'],
-                redirect_uri='http://localhost/login/bitly')
-        self.send_header('Location', c.auth_uri())
-        self.end_headers()
-
-
-    @success
-    def handle_bitly_login(self, data):
-        c = Client(token_endpoint='https://api-ssl.bitly.com/oauth/access_token',
-            resource_endpoint='https://api-ssl.bitly.com',
-            redirect_uri='http://localhost/login/bitly',
-            client_id=config['bitly.client_id'],
-            client_secret=config['bitly.client_secret'])
-        c.request_token(code=data['code'],
-            parser=lambda data: dict(parse_qsl(data)))
-
-        self.dump_client(c)
-        data = c.request('/v3/user/info')['data']
-        self.dump_response(data)
-
-
     def handle_github(self, data):
         self.send_response(302)
         c = Client(auth_endpoint='https://github.com/login/oauth/authorize',
-                client_id=config['github.client_id'],
-                redirect_uri='http://localhost/login/github')
-        self.send_header('Location', c.auth_uri())
+                client_id=config['github.client_id'])
+        self.send_header('Location', c.auth_uri(
+            redirect_uri='http://localhost/login/github'))
         self.end_headers()
 
 
@@ -292,11 +264,10 @@ class Handler(BaseHTTPRequestHandler):
     def handle_github_login(self, data):
         c = Client(token_endpoint='https://github.com/login/oauth/access_token',
             resource_endpoint='https://api.github.com',
-            redirect_uri='http://localhost/login/github',
             client_id=config['github.client_id'],
             client_secret=config['github.client_secret'])
         c.request_token(code=data['code'],
-            parser=lambda data: dict(parse_qsl(data)))
+            redirect_uri='http://localhost/login/github')
 
         self.dump_client(c)
         data = c.request('/user')
@@ -306,9 +277,9 @@ class Handler(BaseHTTPRequestHandler):
     def handle_instagram(self, data):
         self.send_response(302)
         c = Client(auth_endpoint='https://api.instagram.com/oauth/authorize/',
-                client_id=config['instagram.client_id'],
-                redirect_uri='http://localhost/login/instagram')
-        self.send_header('Location', c.auth_uri())
+                client_id=config['instagram.client_id'])
+        self.send_header('Location', c.auth_uri(
+            redirect_uri='http://localhost/login/instagram'))
         self.end_headers()
 
 
@@ -316,10 +287,10 @@ class Handler(BaseHTTPRequestHandler):
     def handle_instagram_login(self, data):
         c = Client(token_endpoint='https://api.instagram.com/oauth/access_token',
             resource_endpoint='https://api.instagram.com/v1',
-            redirect_uri='http://localhost/login/instagram',
             client_id=config['instagram.client_id'],
             client_secret=config['instagram.client_secret'])
-        c.request_token(code=data['code'])
+        c.request_token(code=data['code'],
+            redirect_uri='http://localhost/login/instagram')
 
         self.dump_client(c)
         data = c.request('/users/self')['data']
@@ -330,9 +301,9 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(302)
         c = Client(
             auth_endpoint='https://www.deviantart.com/oauth2/draft15/authorize',
-            client_id=config['deviantart.client_id'],
-            redirect_uri=config['deviantart.redirect_uri'])
-        self.send_header('Location', c.auth_uri())
+            client_id=config['deviantart.client_id'])
+        self.send_header('Location', c.auth_uri(
+            redirect_uri=config['deviantart.redirect_uri']))
         self.end_headers()
 
 
@@ -341,10 +312,10 @@ class Handler(BaseHTTPRequestHandler):
         c = Client(
             token_endpoint='https://www.deviantart.com/oauth2/draft15/token',
             resource_endpoint='https://www.deviantart.com/api/draft15',
-            redirect_uri=config['deviantart.redirect_uri'],
             client_id=config['deviantart.client_id'],
             client_secret=config['deviantart.client_secret'])
-        c.request_token(code=data['code'])
+        c.request_token(code=data['code'],
+            redirect_uri=config['deviantart.redirect_uri'])
 
         self.dump_client(c)
         data = c.request('/user/whoami')
