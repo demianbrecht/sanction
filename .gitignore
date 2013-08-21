@@ -1,6 +1,6 @@
 tags
 /build
-/doc/_build
+/docs/_build
 .coverage
 .env
 .env3
