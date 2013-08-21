@@ -5,6 +5,7 @@ import zlib
 from functools import wraps
 from unittest import TestCase
 from uuid import uuid4
+from io import BytesIO 
 try:
     from urllib2 import addinfourl
     from urlparse import parse_qsl, urlparse
@@ -12,7 +13,7 @@ try:
     from httplib import HTTPMessage
 except ImportError:
     from urllib.parse import parse_qsl, urlparse
-    from io import StringIO
+    from urllib.response import addinfourl
     from http.client import HTTPMessage
 
 from mock import patch
@@ -35,8 +36,13 @@ def with_patched_client(data, code=200, headers=None):
         @wraps(fn)
         def inner(*args, **kwargs):
             with patch('sanction.urlopen') as mock_urlopen:
-                mock_urlopen.return_value = addinfourl(StringIO(data), 
-                    HTTPMessage(StringIO(headers or '')), '', code=code)
+                if type(data) is not bytes:
+                    bdata = BytesIO(data.encode())
+                else:
+                    bdata = BytesIO(data)
+                mock_urlopen.return_value = addinfourl(bdata, 
+                    HTTPMessage(BytesIO((headers or '').encode())), b'', 
+                        code=code)
                 fn(*args, **kwargs)
         return inner
     return wrapper
@@ -109,10 +115,10 @@ class TestClient(TestCase):
 
     @with_patched_client(zlib.compress(json.dumps({
         'userid': 1234
-    })))
+    }).encode('utf8')))
     def test_request_custom_parser(self):
         def _decompress(buf):
-            return json.loads(zlib.decompress(buf))
+            return json.loads(zlib.decompress(buf).decode())
 
         self.client.access_token = 'foo'
         data = self.client.request('/foo', parser=_decompress)

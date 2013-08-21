@@ -164,10 +164,11 @@ class Client(object):
         resp = urlopen(req)
         data = resp.read()
         try:
-            # try to decode it first using either the content charset, falling
-            # back to utf8
             return parser(data.decode(resp.info().get_content_charset() or
                 'utf-8'))
+            # try to decode it first using either the content charset, falling
+            # back to utf-8
+
         except UnicodeDecodeError:
             # if we've gotten a decoder error, the calling code better know how
             # to deal with it. some providers (i.e. stackexchange) like to gzip
