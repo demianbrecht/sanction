@@ -15,6 +15,7 @@ except ImportError:
     from urllib.parse import parse_qsl, urlparse
     from urllib.response import addinfourl
     from http.client import HTTPMessage
+    basestring = str
 
 from mock import patch
 
@@ -36,13 +37,11 @@ def with_patched_client(data, code=200, headers=None):
         @wraps(fn)
         def inner(*args, **kwargs):
             with patch('sanction.urlopen') as mock_urlopen:
-                if type(data) is not bytes:
-                    bdata = BytesIO(data.encode())
-                else:
-                    bdata = BytesIO(data)
-                mock_urlopen.return_value = addinfourl(bdata, 
-                    HTTPMessage(BytesIO((headers or '').encode())), b'', 
-                        code=code)
+                bdata = type(data) is basestring and data.encode() or data
+                bheaders = (headers or '').encode()
+
+                mock_urlopen.return_value = addinfourl(BytesIO(bdata), 
+                    HTTPMessage(BytesIO(bheaders)), '', code=code)
                 fn(*args, **kwargs)
         return inner
     return wrapper
