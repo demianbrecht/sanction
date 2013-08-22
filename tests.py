@@ -38,7 +38,11 @@ def with_patched_client(data, code=200, headers=None):
         def inner(*args, **kwargs):
             with patch('sanction.urlopen') as mock_urlopen:
                 bdata = type(data) is basestring and data.encode() or data
-                bheaders = (headers or '').encode()
+                sheaders = ''
+                if headers is not None:
+                    sheaders = '\r\n'.join(['{}: {}'.format(k, v) for k, v in
+                        headers.items()])
+                bheaders = (sheaders or '').encode()
 
                 mock_urlopen.return_value = addinfourl(BytesIO(bdata), 
                     HTTPMessage(BytesIO(bheaders)), '', code=code)
@@ -134,7 +138,9 @@ class TestClient(TestCase):
 
     @with_patched_client(json.dumps({
         'userid': 1234
-    }), headers='Content-Type: text/html; charset=utf-8')
+    }), headers={
+        'Content-Type': 'text/html; charset=utf-8',
+    })
     def test_request_with_charset(self):
         self.client.access_token = 'foo'
         data = self.client.request('/foo')

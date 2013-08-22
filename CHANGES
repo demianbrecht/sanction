@@ -14,8 +14,12 @@ sanction 0.4 (8-21-2013)
   sanction.Client. The deprecated version will likely be removed within 
   the next couple minor revisions.
 * Feature: Added headers param to request
+* Feature: Added with_patched_client test decorator
 * Brought unit tests up to 100% coverage (yay!)
 * Sphinx-ified the docs, added to RTD
+* Removed Python 3.2 support (causes unit test breakage right now and I don't
+  really want to spend more time on it ;)). The client code should work fine,
+  it's just a test that doesn't pass right now.
 
 sanction 0.3.1 (4-8-2013)
 =========================
