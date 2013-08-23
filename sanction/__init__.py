@@ -126,6 +126,7 @@ class Client(object):
         if redirect_uri is not None:
             kwargs.update({'redirect_uri': redirect_uri})
 
+        # TODO: maybe raise an exception here if status code isn't 200?
         msg = urlopen(self.token_endpoint, urlencode(kwargs).encode(
             'utf-8'))
         data = parser(msg.read().decode(msg.info().get_content_charset() or
