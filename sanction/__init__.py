@@ -180,21 +180,23 @@ class Client(object):
 
 
 def transport_headers(url, access_token, data=None, method=None, headers={}):
+    all_headers = {}
+    all_headers.update(headers)
+    all_headers['Authorization'] = 'Bearer {}'.format(access_token)
+
     try:
-        req = Request(url, data=data, method=method)
+        req = Request(url, data=data, method=method, headers=all_headers)
     except TypeError:
-        req = Request(url, data=data)
+        req = Request(url, data=data, headers=all_headers)
         req.get_method = lambda: method
 
-    add_headers = {'Authorization': 'Bearer {}'.format(access_token)}
-    if headers:
-        add_headers.update(headers)
-
-    req.headers.update(add_headers)
     return req
 
 
 def transport_query(url, access_token, data=None, method=None, headers={}):
+    all_headers = {}
+    all_headers.update(headers)
+
     parts = urlsplit(url)
     query = dict(parse_qsl(parts.query))
     query.update({
@@ -203,13 +205,10 @@ def transport_query(url, access_token, data=None, method=None, headers={}):
     url = urlunsplit((parts.scheme, parts.netloc, parts.path,
         urlencode(query), parts.fragment))
     try:
-        req = Request(url, data=data, method=method)
+        req = Request(url, data=data, method=method, headers=all_headers)
     except TypeError:
-        req = Request(url, data=data)
+        req = Request(url, data=data, headers=all_headers)
         req.get_method = lambda: method
-
-    if headers:
-        req.headers.update(headers)
 
     return req
 
