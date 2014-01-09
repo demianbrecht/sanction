@@ -160,7 +160,7 @@ class Client(object):
         if not method:
             method = 'GET' if not data else 'POST'
 
-        req = self.token_transport('{}{}'.format(self.resource_endpoint, 
+        req = self.token_transport('{0}{1}'.format(self.resource_endpoint, 
             url), self.access_token, data=data, method=method, headers=headers)
 
         resp = urlopen(req)
@@ -186,7 +186,7 @@ def transport_headers(url, access_token, data=None, method=None, headers=None):
         req = Request(url, data=data)
         req.get_method = lambda: method
 
-    add_headers = {'Authorization': 'Bearer {}'.format(access_token)}
+    add_headers = {'Authorization': 'Bearer {0}'.format(access_token)}
     if headers is not None:
         add_headers.update(headers)
 
