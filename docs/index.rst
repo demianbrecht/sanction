@@ -198,12 +198,14 @@ the intention of the library and will not be added.
 Thanks
 ------
 
-* `Jake Basile`_: Pointing out the oversight of the ``refresh_token``.
 * `Alec Taylor`_: Example code refactor.
+* `Jake Basile`_: Pointing out the oversight of the ``refresh_token``.
+* `Ricky Elrod`_: Python 2.6 string index fix.
 
 
 .. _`Jake Basile`: https://github.com/jakebasile
 .. _`Alec Taylor`: https://github.com/AlecTaylor
+.. _`Ricky Elrod`: https://github.com/CodeBlock
 
 
 Indices and tables

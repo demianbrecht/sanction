@@ -1,6 +1,9 @@
 Changes
 =======
 
+sanction 0.4.1 (1-14-2014)
+==========================
+* Fixed string formatting for Python 2.6 
 
 sanction 0.4 (8-21-2013)
 ==========================
