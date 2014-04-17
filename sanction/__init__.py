@@ -139,7 +139,7 @@ class Client(object):
         # provider, token_expires must be set manually
         if hasattr(self, 'expires_in'):
             self.token_expires = mktime((datetime.utcnow() + timedelta(
-                seconds=self.expires_in)).timetuple())
+                seconds=long(self.expires_in))).timetuple())
 
     def refresh(self):
         self.request_token(refresh_token=self.refresh_token,
