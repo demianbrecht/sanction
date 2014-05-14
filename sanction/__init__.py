@@ -138,8 +138,13 @@ class Client(object):
         # expires_in is RFC-compliant. if anything else is used by the
         # provider, token_expires must be set manually
         if hasattr(self, 'expires_in'):
+            try:
+                # python3 dosn't support long
+                seconds = long(self.expires_in)
+            except:
+                seconds = int(self.expires_in)
             self.token_expires = mktime((datetime.utcnow() + timedelta(
-                seconds=long(self.expires_in))).timetuple())
+                seconds=seconds)).timetuple())
 
     def refresh(self):
         self.request_token(refresh_token=self.refresh_token,
