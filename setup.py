@@ -9,7 +9,7 @@ requires = []
 
 setup(name="sanction",
 	keywords="python,oauth2",
-    version="0.4",
+    version="0.4.1",
     description="A simple, lightweight OAuth2 client",
     author="Demian Brecht",
     author_email="demianbrecht@gmail.com",

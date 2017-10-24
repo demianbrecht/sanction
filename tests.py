@@ -5,21 +5,15 @@ import zlib
 from functools import wraps
 from unittest import TestCase
 from uuid import uuid4
-from io import BytesIO 
 try:
-    from urllib2 import addinfourl
     from urlparse import parse_qsl, urlparse
-    from StringIO import StringIO
-    from httplib import HTTPMessage
 except ImportError:
     from urllib.parse import parse_qsl, urlparse
-    from urllib.response import addinfourl
-    from http.client import HTTPMessage
-    basestring = str
 
 from mock import patch
 
 from sanction import Client, transport_headers
+from sanction.test import with_patched_client
 
 AUTH_ENDPOINT = "http://example.com"
 TOKEN_ENDPOINT = "http://example.com/token"
@@ -31,24 +25,6 @@ SCOPE = 'foo,bar'
 STATE = str(uuid4())
 ACCESS_TOKEN = 'access_token'
 
-
-def with_patched_client(data, code=200, headers=None):
-    def wrapper(fn):
-        @wraps(fn)
-        def inner(*args, **kwargs):
-            with patch('sanction.urlopen') as mock_urlopen:
-                bdata = type(data) is basestring and data.encode() or data
-                sheaders = ''
-                if headers is not None:
-                    sheaders = '\r\n'.join(['{}: {}'.format(k, v) for k, v in
-                        headers.items()])
-                bheaders = (sheaders or '').encode()
-
-                mock_urlopen.return_value = addinfourl(BytesIO(bdata), 
-                    HTTPMessage(BytesIO(bheaders)), '', code=code)
-                fn(*args, **kwargs)
-        return inner
-    return wrapper
 
 
 class TestClient(TestCase):

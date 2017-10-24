@@ -1,5 +1,6 @@
 # vim: set ts=4 sw=)
 
+from functools import wraps
 from json import loads
 from datetime import datetime, timedelta
 from time import mktime
@@ -125,6 +126,7 @@ class Client(object):
         if redirect_uri is not None:
             kwargs.update({'redirect_uri': redirect_uri})
 
+        # TODO: maybe raise an exception here if status code isn't 200?
         msg = urlopen(self.token_endpoint, urlencode(kwargs).encode(
             'utf-8'))
         data = parser(msg.read().decode(msg.info().get_content_charset() or
@@ -136,8 +138,13 @@ class Client(object):
         # expires_in is RFC-compliant. if anything else is used by the
         # provider, token_expires must be set manually
         if hasattr(self, 'expires_in'):
+            try:
+                # python3 dosn't support long
+                seconds = long(self.expires_in)
+            except:
+                seconds = int(self.expires_in)
             self.token_expires = mktime((datetime.utcnow() + timedelta(
-                seconds=self.expires_in)).timetuple())
+                seconds=seconds)).timetuple())
 
     def refresh(self):
         self.request_token(refresh_token=self.refresh_token,
@@ -158,7 +165,7 @@ class Client(object):
         if not method:
             method = 'GET' if not data else 'POST'
 
-        req = self.token_transport('{}{}'.format(self.resource_endpoint, 
+        req = self.token_transport('{0}{1}'.format(self.resource_endpoint, 
             url), self.access_token, data=data, method=method, headers=headers)
 
         resp = urlopen(req)
@@ -184,7 +191,7 @@ def transport_headers(url, access_token, data=None, method=None, headers=None):
         req = Request(url, data=data)
         req.get_method = lambda: method
 
-    add_headers = {'Authorization': 'Bearer {}'.format(access_token)}
+    add_headers = {'Authorization': 'Bearer {0}'.format(access_token)}
     if headers is not None:
         add_headers.update(headers)
 
