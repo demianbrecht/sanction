@@ -78,8 +78,8 @@ class Client(object):
         """
 		
         kwargs['client_id'] = self.client_id
-		if 'response_type' in kwargs:
-			kwargs['response_type'] = 'code'
+        if 'response_type' in kwargs:
+            kwargs['response_type'] = 'code'
 
         if scope is not None:
             kwargs['scope'] = scope
