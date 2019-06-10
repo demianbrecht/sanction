@@ -65,6 +65,8 @@ class Handler(BaseHTTPRequestHandler):
         '/oauth2/stackexchange': 'handle_stackexchange',
         '/login/deviantart': 'handle_deviantart_login',
         '/oauth2/deviantart': 'handle_deviantart',
+        '/login/meetup': 'handle_meetup_login',
+        '/oauth2/meetup': 'handle_meetup',
     }
 
     def do_GET(self):
@@ -94,6 +96,7 @@ class Handler(BaseHTTPRequestHandler):
             <a href='/oauth2/instagram'>Instagram</a>,
             <a href='/oauth2/foursquare'>Foursquare</a>,
             <a href='/oauth2/deviantart'>Deviant Art</a>,
+            <a href='/oauth2/meetup'>Meetup.com</a>,
         '''.encode(ENCODING_UTF8))
 
     def handle_stackexchange(self, data):
@@ -320,6 +323,28 @@ class Handler(BaseHTTPRequestHandler):
         self.dump_client(c)
         data = c.request('/user/whoami')
         self.dump_response(data)
+		
+    def handle_meetup(self, data):
+        self.send_response(302)
+        c = Client(auth_endpoint='https://secure.meetup.com/oauth2/authorize',
+                client_id=config['meetup.client_id'])
+        self.send_header('Location', c.auth_uri(
+            scope=config['meetup.scope'],
+            redirect_uri='http://localhost/login/meetup'))
+        self.end_headers()
+
+    @success
+    def handle_meetup_login(self, data):
+        c = Client(token_endpoint='https://secure.meetup.com/oauth2/access',
+            resource_endpoint='https://api.meetup.com',
+            client_id=config['meetup.client_id'],
+            client_secret=config['meetup.client_secret'])
+        c.request_token(code=data['code'],
+            redirect_uri='http://localhost/login/meetup')
+
+        self.dump_client(c)
+        data = c.request('/2/member/self/')
+        self.dump_response(data)
 
 
 if __name__ == '__main__':
@@ -327,5 +352,4 @@ if __name__ == '__main__':
     server_address = ('', 80)
     server = HTTPServer(server_address, Handler)
     l.info('Starting server on %sport %s \nPress <ctrl>+c to exit' % server_address)
-    server.serve_forever()
-
+server.serve_forever()

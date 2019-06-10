@@ -55,16 +55,18 @@ sanction has been tested with the following OAuth2 providers:
 * StackExchange_
 * Instagram_
 * DeviantArt_
+* Meetup.com_
 
-.. _Facebook: https://developers.facebook.com/docs/authentication/
+.. _Facebook: https://developers.facebook.com/docs/authentication
 .. _Google: https://developers.google.com/accounts/docs/OAuth2
 .. _Foursquare: https://developer.foursquare.com/overview/auth
-.. _GitHub: http://developer.github.com/v3/oauth/
-.. _Instagram: http://instagram.com/developer/
+.. _GitHub: http://developer.github.com/v3/oauth
+.. _Instagram: http://instagram.com/developer
 .. _bitly: http://dev.bitly.com/api.html
 .. _StackExchange: https://api.stackexchange.com/docs
-.. _Instagram: http://instagram.com/developer/
-.. _DeviantArt: http://www.deviantart.com/developers/oauth2
+.. _Instagram: http://instagram.com/developer
+.. _DeviantArt: https://www.deviantart.com/developers/authentication
+.. _Meetup.com: https://www.meetup.com/meetup_api/auth/#oauth2-resources
 
 :note: The intention of the sanction library is to not only provide accessibility
        to the OAuth2 authorization code flow, but all server-side flows. However,

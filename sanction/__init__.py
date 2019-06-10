@@ -76,10 +76,10 @@ class Client(object):
         :param **kwargs: Any other querystring parameters to be passed to the
                          provider.
         """
-        kwargs.update({
-            'client_id': self.client_id,
-            'response_type': 'code',
-        })
+        
+        kwargs['client_id'] = self.client_id
+        if not 'response_type' in kwargs:
+            kwargs['response_type'] = 'code'
 
         if scope is not None:
             kwargs['scope'] = scope
