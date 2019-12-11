@@ -187,22 +187,18 @@ class Client(object):
 
 def transport_headers(url, access_token, data=None, method=None, headers={}):
     req = _request(url, data=data, method=method)
-    
-    add_headers = {'Authorization': 'Bearer {0}'.format(access_token)}
-    add_headers.update(headers)
-
-    req.headers.update(add_headers)
+    req.headers['Authorization'] = 'Bearer {0}'.format(access_token)
+    req.headers.update(headers)
     return req
 
 
 def transport_query(url, access_token, data=None, method=None, headers={}):
-    req = _request(url, data=data, method=method)
-
     parts = urlsplit(url)
     query = dict(parse_qsl(parts.query))
     query['access_token'] = access_token
     url = urlunsplit((parts.scheme, parts.netloc, parts.path,
         urlencode(query), parts.fragment))
+    req = _request(url, data=data, method=method)
     req.headers.update(headers)
     return req
 
