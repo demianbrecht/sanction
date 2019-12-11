@@ -12,6 +12,8 @@ try:
     from httplib import HTTPMessage
     def get_content_charset(self, failobj=None):
         try:
+            # Example: Content-Type: text/html; charset=ISO-8859-1
+            # https://tools.ietf.org/html/rfc7231#section-3.1.1.1
             data = self.headers.getheader('Content-Type')
             if 'charset' in data:
                 return data.split(';')[1].split('=')[1].lower()
@@ -30,7 +32,7 @@ def _request(url, data, method):
     try:
         # Python 3.3+ (2012).
         return Request(url, data=data, method=method)
-    else:
+    except TypeError:
         req = Request(url, data=data)
         req.get_method = lambda: method
         return req
