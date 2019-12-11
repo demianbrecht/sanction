@@ -42,7 +42,7 @@ class Client(object):
     """OAuth 2.0 client object"""
 
     def __init__(self, auth_endpoint=None, token_endpoint=None,
-        resource_endpoint=None, client_id=None, client_secret=None,
+        resource_endpoint="", client_id=None, client_secret=None,
         token_transport=None):
         """Instantiates a `Client` to authorize and authenticate a user
 
@@ -57,7 +57,7 @@ class Client(object):
         :param client_id: The client ID as issued by the provider.
         :param client_secret: The client secret as issued by the provider. This
                               must not be shared.
-        :param token_transport: ???
+        :param token_transport: (optional) Callable to construct requests.
         """
         assert token_transport is None or hasattr(token_transport, '__call__')
 
@@ -85,10 +85,8 @@ class Client(object):
         :param **kwargs: Any other querystring parameters to be passed to the
                          provider.
         """
-        kwargs.update({
-            'client_id': self.client_id,
-            'response_type': 'code',
-        })
+        kwargs['client_id'] = self.client_id,
+        kwargs['response_type'] = 'code'
 
         if scope:
             kwargs['scope'] = scope
@@ -124,10 +122,10 @@ class Client(object):
         :param parser: Callback to deal with returned data. By default JSON.
         """
         parser = parser or _default_parser
-        kwargs.update({
-            'client_id': self.client_id,
-            'client_secret': self.client_secret,
-        })
+
+        kwargs['client_id'] = self.client_id,
+        kwargs['client_secret'] = self.client_secret,
+
         if 'grant_type' not in kwargs:
             kwargs['grant_type'] = 'authorization_code'
 
@@ -169,8 +167,8 @@ class Client(object):
         assert self.access_token
         parser = parser or _default_parser 
 
-        transport_uri = '{0}{1}'.format(self.resource_endpoint, url)
-        req = self.token_transport(transport_uri, self.access_token,
+        full_url = '{0}{1}'.format(self.resource_endpoint, url)
+        req = self.token_transport(full_url, self.access_token,
                                    data=data, method=method, headers=headers)
 
         resp = urlopen(req)
