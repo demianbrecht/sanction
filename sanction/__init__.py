@@ -10,15 +10,15 @@ try:
     from urlparse import urlsplit, urlunsplit, parse_qsl
 
     from httplib import HTTPMessage
-    def get_charset(self):
+    def get_content_charset(self, failobj=None):
         try:
             data = self.headers.getheader('Content-Type')
             if 'charset' in data:
                 return data.split(';')[1].split('=')[1].lower()
         except IndexError:
-            return 'utf-8'
+            return failobj
     # monkeypatch HTTPMmessage
-    HTTPMessage.get_content_charset = get_charset 
+    HTTPMessage.get_content_charset = get_content_charset
 except ImportError: # pragma: no cover
     from urllib.parse import urlencode, urlsplit, urlunsplit, parse_qsl
     from urllib.request import Request, urlopen
@@ -70,7 +70,6 @@ class Client(object):
         self.refresh_token = None
 
     def auth_uri(self, redirect_uri=None, scope=None, state=None, **kwargs):
-
         """Builds the auth URI for the authorization endpoint
 
         :param scope: (optional) The `scope` parameter to pass for
@@ -101,7 +100,8 @@ class Client(object):
         return '%s?%s' % (self.auth_endpoint, urlencode(kwargs))
 
     def request_token(self, parser=None, redirect_uri=None, **kwargs):
-        """ Request an access token from the token endpoint.
+        """ Requests an access token from the token endpoint.
+
         This is largely a helper method and expects the client code to
         understand what the server expects. Anything that's passed into
         ``**kwargs`` will be sent (``urlencode``d) to the endpoint. Client
@@ -119,19 +119,16 @@ class Client(object):
                 'grant_type': 'refresh_token',
             }
 
-        :param parser: Callback to deal with returned data. Not all providers
-                       use JSON.
+        :param parser: Callback to deal with returned data. By default JSON.
         """
-        if not kwargs:
-            kwargs = {}
-
         parser = parser or _default_parser
         kwargs.update({
             'client_id': self.client_id,
             'client_secret': self.client_secret,
-            'grant_type': 'grant_type' in kwargs and kwargs['grant_type'] or \
-                'authorization_code'
         })
+        if 'grant_type' not in kwargs:
+            kwargs['grant_type'] = 'authorization_code'
+
         if redirect_uri:
             kwargs['redirect_uri'] = redirect_uri
 
@@ -143,7 +140,7 @@ class Client(object):
         for key in data:
             setattr(self, key, data[key])
 
-        # expires_in is RFC-compliant. if anything else is used by the
+        # expires_in is RFC-compliant. If anything else is used by the
         # provider, token_expires must be set manually
         if hasattr(self, 'expires_in'):
             try:
@@ -165,7 +162,7 @@ class Client(object):
                        in which case it defaults to ``POST``
         :param data: Data to be POSTed to the resource endpoint
         :param parser: Parser callback to deal with the returned data. Defaults
-                       to ``json.loads`.`
+                       to ``json.loads`, and dict(parse_qsl()) as fallback.`
         """
         assert self.access_token
         parser = parser or _default_parser 
@@ -177,12 +174,12 @@ class Client(object):
         resp = urlopen(req)
         data = resp.read()
         try:
+            # Try to decode it first using either the content charset, falling
+            # back to UTF-8
             return parser(data.decode(resp.info().get_content_charset(failobj="utf-8"))))
-            # try to decode it first using either the content charset, falling
-            # back to utf-8
         except UnicodeDecodeError:
-            # if we've gotten a decoder error, the calling code better know how
-            # to deal with it. some providers (i.e. stackexchange) like to gzip
+            # If we've gotten a decoder error, the calling code better know how
+            # to deal with it. Some providers (i.e. stackexchange) like to gzip
             # their responses, so this allows the client code to handle it
             # directly.
             return parser(data)
