@@ -68,7 +68,7 @@ sanction has been tested with the following OAuth2 providers:
 
 :note: The intention of the sanction library is to not only provide accessibility
        to the OAuth2 authorization code flow, but all server-side flows. However,
-       due to lack of implementations, the only tested currently teseted flows
+       due to lack of implementations, the only tested currently tested flows
        are authorization code and client credentials.
 
 
